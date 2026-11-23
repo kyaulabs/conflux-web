@@ -25,7 +25,7 @@ const repo = '/repos/kyaulabs/conflux';
 const project = '/orgs/kyaulabs/projectsV2/5';
 const issue = {number: 42, title: 'Qualify headphone cue', state: 'open', milestone: {number: 3}, url: `https://api.github.com${repo}/issues/42`};
 
-test('draws the commit activity trace from deck cyan to amber', async ({page}) => {
+test('draws the commit activity trace and fill with the same cyan-to-amber gradient', async ({page}) => {
   const sha = 'a'.repeat(40);
   await page.route('https://api.github.com/**', route => {
     const {pathname, searchParams} = new URL(route.request().url());
@@ -40,6 +40,8 @@ test('draws the commit activity trace from deck cyan to amber', async ({page}) =
   await page.goto('/');
   const trace = page.locator('#chart-activity path[stroke^="url("]');
   await expect(trace).toBeVisible();
+  const fill = page.locator('#chart-activity path[fill^="url("]');
+  await expect(fill).toHaveAttribute('fill', await trace.getAttribute('stroke'));
   const stops = await trace.evaluate(path => {
     const id = path.getAttribute('stroke').slice(4, -1);
     return [...document.querySelectorAll(`${id} stop`)].map(stop => getComputedStyle(stop).stopColor);

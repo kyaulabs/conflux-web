@@ -1286,18 +1286,14 @@ const Charts = {
       .call((g) => g.selectAll('text').attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 10))
       .call((g) => g.selectAll('.domain').remove());
 
-    /* Gradient definitions for the area fill and the signal line. */
-    const defs = svg.append('defs');
+    /* Share the horizontal gradient so the fill follows the line's color. */
     const gid = `ag${Math.floor(Math.random() * 1e6)}`;
-    const grad = defs.append('linearGradient').attr('id', gid)
-      .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
-    grad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent).attr('stop-opacity', 0.34);
-    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent).attr('stop-opacity', 0.01);
-    const lid = `lg${Math.floor(Math.random() * 1e6)}`;
-    const lgrad = defs.append('linearGradient').attr('id', lid)
-      .attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 0);
-    lgrad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
-    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent3);
+    const grad = svg.append('defs').append('linearGradient').attr('id', gid)
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', x(pts[0].date)).attr('x2', x(pts.at(-1).date))
+      .attr('y1', 0).attr('y2', 0);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent3);
 
     /* Average reference line. */
     const avg = d3.mean(pts, (d) => d.v) || 0;
@@ -1320,6 +1316,7 @@ const Charts = {
     svg.append('path').datum(pts)
       .attr('d', area)
       .attr('fill', `url(#${gid})`)
+      .attr('fill-opacity', 0.22)
       .attr('opacity', Utils.reducedMotion ? 1 : 0)
       .call((sel) => {
         if (!Utils.reducedMotion) sel.transition().duration(900).attr('opacity', 1);
@@ -1328,7 +1325,7 @@ const Charts = {
     const linePath = svg.append('path').datum(pts)
       .attr('d', line)
       .attr('fill', 'none')
-      .attr('stroke', `url(#${lid})`)
+      .attr('stroke', `url(#${gid})`)
       .attr('stroke-width', 2)
       .attr('stroke-linejoin', 'round');
 
