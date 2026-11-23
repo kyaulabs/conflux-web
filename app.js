@@ -1196,7 +1196,7 @@ const Charts = {
   palette() {
     const v = Utils.cssVar;
     return {
-      accent: v('--accent') || '#ff877d',
+      accent: v('--accent') || '#58d6c3',
       accent2: v('--accent-2') || '#58d6c3',
       accent3: v('--accent-3') || '#f2c568',
       ink: v('--ink-0') || '#f5f4f0',
