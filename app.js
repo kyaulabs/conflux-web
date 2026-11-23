@@ -1296,8 +1296,8 @@ const Charts = {
     const lid = `lg${Math.floor(Math.random() * 1e6)}`;
     const lgrad = defs.append('linearGradient').attr('id', lid)
       .attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 0);
-    lgrad.append('stop').attr('offset', '0%').attr('stop-color', 'var(--conflux-signal)');
-    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent2);
+    lgrad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
+    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent3);
 
     /* Average reference line. */
     const avg = d3.mean(pts, (d) => d.v) || 0;

@@ -25,6 +25,28 @@ const repo = '/repos/kyaulabs/conflux';
 const project = '/orgs/kyaulabs/projectsV2/5';
 const issue = {number: 42, title: 'Qualify headphone cue', state: 'open', milestone: {number: 3}, url: `https://api.github.com${repo}/issues/42`};
 
+test('draws the commit activity trace from deck cyan to amber', async ({page}) => {
+  const sha = 'a'.repeat(40);
+  await page.route('https://api.github.com/**', route => {
+    const {pathname, searchParams} = new URL(route.request().url());
+    let json = [];
+    if (pathname === repo) json = {full_name: 'kyaulabs/conflux', default_branch: 'main', created_at: '2026-01-01'};
+    if (pathname === `${repo}/branches`) json = [{name: 'main', commit: {sha}}];
+    if (pathname === `${repo}/commits` && searchParams.get('sha') === sha) {
+      json = [{sha, commit: {committer: {date: new Date().toISOString()}}}];
+    }
+    return route.fulfill({json});
+  });
+  await page.goto('/');
+  const trace = page.locator('#chart-activity path[stroke^="url("]');
+  await expect(trace).toBeVisible();
+  const stops = await trace.evaluate(path => {
+    const id = path.getAttribute('stroke').slice(4, -1);
+    return [...document.querySelectorAll(`${id} stop`)].map(stop => getComputedStyle(stop).stopColor);
+  });
+  expect(stops).toEqual(['rgb(88, 214, 195)', 'rgb(242, 197, 104)']);
+});
+
 test('loads CONFLUX milestones and routes its project issues into their GitHub status columns', async ({page}) => {
   await page.route('https://api.github.com/**', route => {
     const {pathname, searchParams} = new URL(route.request().url());
