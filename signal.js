@@ -12,27 +12,30 @@
   const grid = d3.range(0, width + 1, 20);
   lanes.append('path').attr('d', grid.map((x,i) => `M${x},-68v${i % 4 ? 3 : 10} M${x},68v-${i % 4 ? 3 : 10}`).join(''))
     .attr('stroke', 'var(--muted)').attr('opacity', .24);
-  lanes.append('line').attr('x2', width).attr('stroke', d => d.ink).attr('opacity', .35);
-  const points = d3.range(0, width + 1, 4);
+  const spacing = 4;
+  const points = d3.range(0, width + spacing + 1, spacing);
   const area = d3.area().x(d => d.x).y0(d => -d.amp).y1(d => d.amp);
   const waves = lanes.append('path').attr('class', 'wave').attr('fill', d => d.ink).attr('fill-opacity', .12)
     .attr('stroke', d => d.ink).attr('stroke-opacity', .57).attr('stroke-width', 1);
-  const bars = lanes.append('path').attr('stroke', d => d.ink).attr('stroke-width', 2).attr('opacity', .3);
   const playhead = svg.append('g').attr('transform', 'translate(320,0)').attr('fill', 'var(--primary)');
   channels.forEach(({y}) => {
     playhead.append('path').attr('d', `M-5,${y-72}h10l-5,7Z`);
     playhead.append('line').attr('y1', y-65).attr('y2', y+65).attr('stroke','var(--primary)').attr('opacity', .5);
   });
   function draw(time) {
+    // Slide the same samples across the display rather than resampling a
+    // moving signal on fixed pixels, which makes narrow peaks swell and shrink.
+    const travel = time * .042;
+    const offset = travel % spacing;
+    const origin = travel - offset;
     channels.forEach((channel, i) => {
       const samples = points.map(x => {
-        const u = (x + time * .042) / 80 + channel.phase;
+        const u = (x + origin) / 80 + channel.phase;
         const body = 9 + 30 * Math.exp(-3 * (u % 1)) + 12 * Math.cos(u * .8);
         const amp = 2 + Math.abs(Math.sin(13 * u) * .62 + Math.sin(37 * u + i) * .38) * body;
-        return {x, amp};
+        return {x: x - offset, amp};
       });
       waves.filter(d => d === channel).attr('d', area(samples));
-      bars.filter(d => d === channel).attr('d', samples.filter((_, n) => n % 2 === 0).map(({x, amp}) => `M${x},${-amp}v${2*amp}`).join(''));
     });
   }
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');

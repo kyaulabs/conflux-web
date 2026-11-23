@@ -1296,8 +1296,8 @@ const Charts = {
     const lid = `lg${Math.floor(Math.random() * 1e6)}`;
     const lgrad = defs.append('linearGradient').attr('id', lid)
       .attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 0);
-    lgrad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
-    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent);
+    lgrad.append('stop').attr('offset', '0%').attr('stop-color', 'var(--conflux-signal)');
+    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent2);
 
     /* Average reference line. */
     const avg = d3.mean(pts, (d) => d.v) || 0;
@@ -1500,8 +1500,8 @@ const Charts = {
     const gid = `gg${Math.floor(Math.random() * 1e6)}`;
     const grad = svg.append('defs').append('linearGradient')
       .attr('id', gid).attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 1);
-    grad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
-    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', 'var(--conflux-signal)');
+    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent2);
 
     /* Value arc (tweened). */
     const value = g.append('path').attr('fill', `url(#${gid})`);
