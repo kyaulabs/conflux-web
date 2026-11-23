@@ -1,0 +1,3083 @@
+// $KYAULabs: app.js kyau@aura.kyaulabs 2026/11/22 -0800 Exp $
+/* CONFLUX repository telemetry. GitHub records are untrusted. */
+'use strict';
+
+/* ----------------------------------------------------------------------------
+ * CONFIG — compile-time constants.
+ * ------------------------------------------------------------------------- */
+const CONFIG = {
+  owner: 'kyaulabs',          // GitHub organization
+  repo: 'conflux',              // repository name
+  roadmapProject: 5,         // public CONFLUX Roadmap; read-only REST access
+  apiBase: 'https://api.github.com',
+  cacheKey: 'conflux.telemetry.v1.',  // sessionStorage namespace prefix
+  cacheTTLms: 10 * 60 * 1000,       // 10 minute cache lifetime
+  perPage: { commits: 14, issues: 30, pulls: 12, releases: 8, branches: 100, contributors: 10 },
+};
+
+/* ----------------------------------------------------------------------------
+ * Core metadata captured from GitHub; unavailable record feeds stay unavailable.
+ * ------------------------------------------------------------------------- */
+const SNAPSHOT = {
+  "fetchedAt": "2026-11-23T03:31:30+00:00",
+  "repo": {
+    "created_at": "2026-10-16T05:11:55Z",
+    "default_branch": "main",
+    "forks_count": 0,
+    "full_name": "kyaulabs/conflux",
+    "html_url": "https://github.com/kyaulabs/conflux",
+    "language": "JavaScript",
+    "license": {
+      "spdx_id": "AGPL-3.0"
+    },
+    "open_issues_count": 65,
+    "pushed_at": "2026-11-23T03:11:12Z",
+    "stargazers_count": 0,
+    "subscribers_count": 0
+  },
+  "languages": {
+    "JavaScript": 217
+  },
+  "contributors": [
+    {
+      "avatar_url": "https://avatars.githubusercontent.com/u/470450?v=4",
+      "contributions": 75,
+      "html_url": "https://github.com/kyau",
+      "login": "kyau",
+      "type": "User"
+    },
+    {
+      "avatar_url": "https://avatars.githubusercontent.com/u/135310113?v=4",
+      "contributions": 25,
+      "html_url": "https://github.com/kyaulabs-bot",
+      "login": "kyaulabs-bot",
+      "type": "User"
+    }
+  ],
+  "branches": [
+    {
+      "name": "chore/kyau-54fd72-integrate-m2-m3-candidate",
+      "protected": true,
+      "sha": "86c8d5fed0c14a06ef60a35b0263af1077772288"
+    },
+    {
+      "name": "develop",
+      "protected": true,
+      "sha": "6c2f3966274923dd7a3e577b7649b91366936a84"
+    },
+    {
+      "name": "docs/kyau-3f0c62-live-tempo-status",
+      "protected": true,
+      "sha": "6ab17b61dfff86890072c75cf89cb7049dc9d6f8"
+    },
+    {
+      "name": "docs/kyau-26effd-shutdown-evidence",
+      "protected": true,
+      "sha": "db45dbafedf8dc715b47608d51a52b37b29c60d9"
+    },
+    {
+      "name": "docs/kyau-8434e9-musical-analysis-audit",
+      "protected": true,
+      "sha": "74f79345c774473beb43d8736e6ce8f3687022b3"
+    },
+    {
+      "name": "docs/kyau-819501-current-fixed-tempo-hour",
+      "protected": true,
+      "sha": "e4123000463da68e1e73619fcfadbc6af219bdb2"
+    },
+    {
+      "name": "docs/kyau-d7dead-cache-reference-evidence",
+      "protected": true,
+      "sha": "bc7aa7746d88934a42a8b985f6a11c5377e5dd6c"
+    },
+    {
+      "name": "docs/kyau-f9d7d7-essentia-local-key",
+      "protected": true,
+      "sha": "419a9c490d4c4bf75a27de3630ede44854022923"
+    },
+    {
+      "name": "docs/kyau-f18180-tempo-hour-audit",
+      "protected": true,
+      "sha": "e5a5d550e3f5fbc0b60dee12d22ef902c6b66ba6"
+    },
+    {
+      "name": "feat/kyau-4e711f-local-harmony-display",
+      "protected": true,
+      "sha": "b1706626ecd9592b292af693add88826a080a987"
+    },
+    {
+      "name": "feat/kyau-9d29ba-live-tempo-recovery",
+      "protected": true,
+      "sha": "9e35bda2eeb75c54630b392a9b631d3fca212684"
+    },
+    {
+      "name": "feat/kyau-66be24-show-local-bar",
+      "protected": true,
+      "sha": "328319445952dbbb9d121f4c5d64fe09e1ddfdda"
+    },
+    {
+      "name": "feat/kyau-d86364-live-stem-tempo",
+      "protected": true,
+      "sha": "e86585b537175ea5b5570c6c05565f1f103db050"
+    },
+    {
+      "name": "feat/kyau-fa1fd4-m2-m3-integration",
+      "protected": true,
+      "sha": "9c54b5f4cd7f7c2f9f52dd35cf0a76f3d2af2d25"
+    },
+    {
+      "name": "fix/kyau-1ef1ad-processed-resident-cycle",
+      "protected": true,
+      "sha": "d80edfa75e603ef9116186d0f1f19035e05e16dd"
+    },
+    {
+      "name": "fix/kyau-2fef93-recovery-clock-check",
+      "protected": true,
+      "sha": "8b9669e92e764822b272984502b25624609d419d"
+    },
+    {
+      "name": "fix/kyau-05eb81-native-idle-quit",
+      "protected": true,
+      "sha": "e61290ffcb00058c7deaac253a892a6cef094050"
+    },
+    {
+      "name": "fix/kyau-86c4b7-tempo-low-reserve",
+      "protected": true,
+      "sha": "e8a7e035cc9a40b9bf12ea30e0ef8babe89e2ff4"
+    },
+    {
+      "name": "fix/kyau-433b72-resume-superseded-stem-fault",
+      "protected": true,
+      "sha": "d71407783d9ec4b3b051876608352e2c7d57de4a"
+    },
+    {
+      "name": "fix/kyau-945f88-publish-tempo-ready-lead",
+      "protected": true,
+      "sha": "d223285a398d59834310c8ecdf5b459ca3955696"
+    },
+    {
+      "name": "fix/kyau-7075c0-tempo-ready-prefix",
+      "protected": true,
+      "sha": "00eebb558f7f99801100ff38ddcb620095e4c0cb"
+    },
+    {
+      "name": "fix/kyau-56773d-native-shutdown-result",
+      "protected": true,
+      "sha": "ea5c083376a9d19f100d2f930022192478b022a6"
+    },
+    {
+      "name": "fix/kyau-293493-opening-suffix-handoff",
+      "protected": true,
+      "sha": "f43abac6a5e2b8b670ec5a86ca8f4126e9868f26"
+    },
+    {
+      "name": "fix/kyau-630210-stable-live-master-tempo-input",
+      "protected": true,
+      "sha": "c88c6b05f7c407d2e143747811c5781064735b45"
+    },
+    {
+      "name": "fix/kyau-bbb84d-tagged-mp3-preparation",
+      "protected": true,
+      "sha": "b8339e186e6d7228855d169397196ba56e0574dc"
+    },
+    {
+      "name": "fix/kyau-df68a9-tempo-output-packing",
+      "protected": true,
+      "sha": "03b589fbca528c611e335dc07206047bdbec2385"
+    },
+    {
+      "name": "main",
+      "protected": true,
+      "sha": "1fab6ce2e5b768287f09c1e4c29e2d47ffb9826c"
+    },
+    {
+      "name": "perf/kyau-0dcedf-local-bpm-lookup",
+      "protected": true,
+      "sha": "26f815d5dc7e6148b165beb029ec71896468caa0"
+    },
+    {
+      "name": "perf/kyau-1ca455-retain-opening-stem-window",
+      "protected": true,
+      "sha": "584f4ae7f085727345ec3de18f35b6f942c03d9f"
+    },
+    {
+      "name": "perf/kyau-3c1f00-reuse-seek-window",
+      "protected": true,
+      "sha": "f9c499c2c8b4e727d0098335f61c2b2411a0656b"
+    },
+    {
+      "name": "perf/kyau-8c47d3-serve-cached-seek-prefix",
+      "protected": true,
+      "sha": "4a4a7f991a42ce4aeb6fdcf6ec1a06944d1026b9"
+    },
+    {
+      "name": "perf/kyau-947ed4-prefill-master-tempo-on-seek",
+      "protected": true,
+      "sha": "d782f15413d016fa58dd794d96102b22eace4583"
+    },
+    {
+      "name": "perf/kyau-346530-reuse-active-seek-inference",
+      "protected": true,
+      "sha": "5b11d2fc7d07ea716293ef1f46cb33e90327428c"
+    },
+    {
+      "name": "perf/kyau-765747-reuse-cold-seek-inference",
+      "protected": true,
+      "sha": "5f005c533d0ec85ee023838fca36c8df6a4f3de9"
+    },
+    {
+      "name": "perf/kyau-ba5267-reuse-cold-seek-preroll",
+      "protected": true,
+      "sha": "06b2b99a0846f4411d9adce579658d631b254695"
+    },
+    {
+      "name": "perf/kyau-dd0904-stem-opening-replay",
+      "protected": true,
+      "sha": "6315dbd67f36060c423c72bfb3e71b2069a91138"
+    },
+    {
+      "name": "test/kyau-8a36ae-recorder-write-failure",
+      "protected": true,
+      "sha": "7d64b5d1d3b49aa174cb946e17817f47fa8cf682"
+    }
+  ],
+  "counts": {
+    "issuesOpen": 31,
+    "issuesClosed": 14,
+    "prsOpen": 34,
+    "prsClosed": 245
+  }
+};
+
+const Utils = {
+  /** @type {boolean} True when the user prefers reduced motion. */
+  reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+
+  /**
+   * Deterministic PRNG (mulberry32). Tiny, fast, and seedable so synthetic
+   * data is stable between page loads.
+   * @param {number} seed - Unsigned 32-bit seed.
+   * @returns {() => number} Generator producing floats in [0, 1).
+   */
+  mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  },
+
+  /** Query a single element. @returns {Element|null} */
+  $(sel, root = document) { return root.querySelector(sel); },
+
+  /**
+   * Escape user- or API-supplied text for safe HTML interpolation.
+   * @param {string} s
+   * @returns {string}
+   */
+  esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  },
+
+  /** Clamp `v` into [min, max]. */
+  clamp(v, min, max) { return Math.min(max, Math.max(min, v)); },
+
+  /**
+   * True for GitHub App logins of the form "dependabot[bot]". Regular user
+   * accounts whose name merely ends in "-bot" (e.g. "kyaulabs-bot") pass.
+   * @param {string} login
+   * @returns {boolean}
+   */
+  isAppLogin(login) { return /\[bot\]$/i.test(String(login ?? '')); },
+
+  /**
+   * True for release maintenance branches of the form `release/X.Y.Z`.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  isReleaseBranch(name) { return /^release\/\d+\.\d+\.\d+$/.test(String(name ?? '')); },
+
+  /**
+   * Debounce a function.
+   * @param {Function} fn
+   * @param {number} ms
+   * @returns {Function}
+   */
+  debounce(fn, ms) {
+    let id = 0;
+    return (...args) => { clearTimeout(id); id = setTimeout(() => fn(...args), ms); };
+  },
+
+  /** Format an integer with locale grouping: 1234 → "1,234". */
+  fmtInt(n) { return Math.round(n).toLocaleString('en-US'); },
+
+  /** Compact notation: 1234 → "1.2K" (via Intl). */
+  fmtCompact(n) {
+    return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  },
+
+  /**
+   * Human-readable byte volume.
+   * @param {number} bytes
+   * @returns {string} e.g. "992.8 KB" / "3.1 MB"
+   */
+  fmtBytes(bytes) {
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let v = bytes, u = 0;
+    while (v >= 1024 && u < units.length - 1) { v /= 1024; u++; }
+    return `${v >= 100 ? Math.round(v) : v.toFixed(1)} ${units[u]}`;
+  },
+
+  /**
+   * Relative timestamp: "just now", "4h ago", "3d ago", "5mo ago".
+   * @param {string} iso - ISO-8601 date string.
+   * @returns {string}
+   */
+  timeAgo(iso) {
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return 'just now';
+    const m = s / 60; if (m < 60) return `${Math.floor(m)}m ago`;
+    const h = m / 60; if (h < 24) return `${Math.floor(h)}h ago`;
+    const d = h / 24; if (d < 30) return `${Math.floor(d)}d ago`;
+    const mo = d / 30.44; if (mo < 12) return `${Math.floor(mo)}mo ago`;
+    return `${Math.floor(mo / 12)}y ago`;
+  },
+
+  /**
+   * Long date for tooltips: "Mon, Jul 21 2026".
+   * @param {Date} d
+   * @param {string} [timeZone] - Calendar timezone; defaults to the viewer's.
+   * @returns {string}
+   */
+  fmtDate(d, timeZone) {
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone });
+  },
+
+  /** Short month-year: "Jul 2026". */
+  fmtMonthYear(d) {
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  },
+
+  /**
+   * Read a CSS custom property from :root (theme-aware chart palettes).
+   * @param {string} name - e.g. '--accent'.
+   * @returns {string} Trimmed value, '' when undefined.
+   */
+  cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  },
+
+  /**
+   * Parse a hex color (#rgb / #rrggbb) into RGB components.
+   * @param {string} hex
+   * @returns {{r:number,g:number,b:number}}
+   */
+  hexToRgb(hex) {
+    let h = hex.replace('#', '');
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    const n = parseInt(h, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  },
+
+  /**
+   * Build an rgba() string from a hex color and alpha.
+   * Falls back to a neutral gray when the input is not parseable hex.
+   * @param {string} hex
+   * @param {number} a - Alpha in [0, 1].
+   * @returns {string}
+   */
+  rgba(hex, a) {
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return `rgba(128,148,178,${a})`;
+    const { r, g, b } = Utils.hexToRgb(hex);
+    return `rgba(${r},${g},${b},${a})`;
+  },
+
+  /**
+   * Pick a readable text color (near-black or white) for a given hex fill.
+   * Uses the WCAG relative-luminance threshold.
+   * @param {string} hex
+   * @returns {string}
+   */
+  contrastInk(hex) {
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return '#ffffff';
+    const { r, g, b } = Utils.hexToRgb(hex);
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    return lum > 0.55 ? '#0b1424' : '#ffffff';
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * Markdown — dependency-free GitHub-flavored markdown → HTML renderer.
+ * Renders release-note bodies. Source text is escaped FIRST; the formatter
+ * then reintroduces a whitelisted set of tags, so no raw HTML (or script)
+ * from upstream release bodies can ever reach the DOM.
+ * ------------------------------------------------------------------------- */
+const Markdown = {
+  /** Render release notes without the leading logo or separate changelog section. */
+  renderRelease(src) { return this.render(this.splitRelease(src).notes); },
+
+  /** Split actual changelog headings, never fenced examples or HTML comments. */
+  splitRelease(src) {
+    const source = String(src || '');
+    const banner = /^\s*<p\b[^>]*>\s*<picture\b[^>]*>[\s\S]*?<\/picture>\s*<\/p>\s*/i.exec(source);
+    const notes = banner && /\/brand\/assets\/(?:logos\/conflux-|social\/social-banner-)/i.test(banner[0])
+      ? source.slice(banner[0].length) : source;
+    const lines = notes.replace(/\r\n?/g, '\n').split('\n');
+    let fence = null, comment = false, start = -1, level = 0, end = lines.length;
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      const marker = /^\s*(`{3,}|~{3,})(.*)$/.exec(line);
+      if (fence) {
+        if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = null;
+        continue;
+      }
+      if (!comment && marker) { fence = marker[1]; continue; }
+      if (comment || line.includes('<!--')) {
+        comment = !line.includes('-->');
+        continue;
+      }
+      const heading = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
+      if (!heading) continue;
+      if (start !== -1 && heading[1].length <= level) { end = index; break; }
+      if (start === -1 && heading[2].replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, '').toLowerCase() === 'changelog') {
+        start = index;
+        level = heading[1].length;
+      }
+    }
+    const changelog = start === -1 ? '' : lines.slice(start + 1, end).join('\n').trim();
+    return { notes: changelog ? [...lines.slice(0, start), ...lines.slice(end)].join('\n').trim() : notes, changelog };
+  },
+
+  /**
+   * Render markdown source to an HTML string.
+   * @param {string} src
+   * @returns {string}
+   */
+  render(src) {
+    if (!src) return '';
+    /* Prose comments (e.g. git-cliff stamps) stay hidden; fenced comments are literal code. */
+    const lines = String(src).replace(/\r\n?/g, '\n')
+      .replace(/(^[ \t]*```[^\n]*\n[\s\S]*?(?:^[ \t]*```[ \t]*$|(?![\s\S])))|<!--[\s\S]*?-->/gm, (_match, code) => code || '')
+      .split('\n');
+    const out = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      /* Blank line — block separator. */
+      if (!line.trim()) { i++; continue; }
+
+      /* Fenced code block. */
+      if (/^\s*```/.test(line)) {
+        const buf = [];
+        i++;
+        while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) { buf.push(lines[i]); i++; }
+        i++; // consume the closing fence (or run off the end of input)
+        out.push(`<pre><code>${this._linkShas(Utils.esc(buf.join('\n')))}</code></pre>`);
+        continue;
+      }
+
+      /* ATX heading. */
+      const h = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (h) {
+        const lvl = h[1].length;
+        out.push(`<h${lvl}>${this._inline(h[2].trim())}</h${lvl}>`);
+        i++; continue;
+      }
+
+      /* Thematic break. */
+      if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
+
+      /* GFM table — a row containing pipes whose NEXT line is a delimiter
+         row of dashes. Column counts must match (GFM rule), so prose lines
+         that merely contain a pipe never false-positive. */
+      if (line.includes('|') && i + 1 < lines.length) {
+        const head = this._tableCells(line);
+        if (this._isTableDelim(lines[i + 1], head.length)) {
+          const aligns = this._tableAligns(lines[i + 1]);
+          const align = (n) => (aligns[n] ? ` style="text-align:${aligns[n]}"` : '');
+          const rows = [];
+          i += 2;
+          while (i < lines.length && lines[i].trim() && lines[i].includes('|')
+                 && !/^(?:#{1,6}\s|```|\s*>|\s*(?:-{3,}|\*{3,}|_{3,})\s*$)/.test(lines[i])) {
+            rows.push(this._tableCells(lines[i]));
+            i++;
+          }
+          out.push(
+            `<div class="md-table-wrap"><table><thead><tr>${head.map((c, n) => `<th${align(n)}>${this._inline(c)}</th>`).join('')}</tr></thead>`
+            + (rows.length
+              ? `<tbody>${rows.map((r) => `<tr>${r.map((c, n) => `<td${align(n)}>${this._inline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`
+              : '')
+            + '</table></div>',
+          );
+          continue;
+        }
+      }
+
+      /* Blockquote — recurse on the de-quoted lines. */
+      if (/^\s*>/.test(line)) {
+        const buf = [];
+        while (i < lines.length && /^\s*>/.test(lines[i])) {
+          buf.push(lines[i].replace(/^\s*>\s?/, ''));
+          i++;
+        }
+        out.push(`<blockquote>${this.render(buf.join('\n'))}</blockquote>`);
+        continue;
+      }
+
+      /* List (unordered / ordered, indentation-nested). */
+      if (/^\s*(?:[-*+]|\d+[.)])\s+/.test(line)) {
+        const parsed = this._list(lines, i);
+        out.push(parsed.html);
+        i = parsed.next;
+        continue;
+      }
+
+      /* Paragraph — consume until a blank line or the start of another block. */
+      const buf = [];
+      while (i < lines.length && lines[i].trim()
+             && !/^(?:#{1,6}\s|```|\s*>|\s*(?:[-*+]|\d+[.)])\s|\s*(?:-{3,}|\*{3,}|_{3,})\s*$)/.test(lines[i])
+             && !(lines[i].includes('|') && i + 1 < lines.length
+                  && this._isTableDelim(lines[i + 1], this._tableCells(lines[i]).length))) {
+        buf.push(lines[i]);
+        i++;
+      }
+      out.push(`<p>${this._inline(buf.join('\n')).replace(/ {2,}\n/g, '<br>').replace(/\n/g, ' ')}</p>`);
+    }
+    return out.join('\n');
+  },
+
+  /**
+   * Parse a (possibly indentation-nested) list starting at lines[start].
+   * @param {string[]} lines
+   * @param {number} start
+   * @returns {{html: string, next: number}} HTML and the next unconsumed line.
+   */
+  _list(lines, start) {
+    const baseIndent = /^\s*/.exec(lines[start])[0].length;
+    const ordered = /^\s*\d+[.)]\s/.test(lines[start]);
+    const tag = ordered ? 'ol' : 'ul';
+    const items = [];
+    let i = start;
+
+    while (i < lines.length && lines[i].trim()) {
+      const line = lines[i];
+      const indent = /^\s*/.exec(line)[0].length;
+      const item = /^\s*(?:[-*+]|\d+[.)])\s+(.*)$/.exec(line);
+
+      if (item && indent === baseIndent) {
+        /* GFM task-list marker (`- [ ]` / `- [x]`) — rendered as a fake
+           checkbox (visual only, the popup has no forms). */
+        const task = /^\[( |x|X)\]\s+/.exec(item[1]);
+        items.push({
+          text: task ? item[1].slice(task[0].length) : item[1],
+          sub: '',
+          task: task ? task[1].toLowerCase() === 'x' : null,
+        });
+        i++;
+      } else if (item && indent > baseIndent && items.length) {
+        /* Nested list — recurse and attach it to the previous item. */
+        const sub = this._list(lines, i);
+        items[items.length - 1].sub += sub.html;
+        i = sub.next;
+      } else if (!item && indent > baseIndent && items.length) {
+        /* Lazy continuation line of the previous item. */
+        items[items.length - 1].text += ` ${line.trim()}`;
+        i++;
+      } else break;
+    }
+
+    /* When a list contains task items its bullets are suppressed entirely
+       (GitHub style) — checkboxes replace the markers. */
+    const hasTask = items.some((it) => it.task !== null);
+    const html = `<${tag}${hasTask ? ' class="contains-task-list"' : ''}>${items.map((it) => {
+      if (it.task === null) return `<li>${this._inline(it.text)}${it.sub}</li>`;
+      const box = `<span class="md-check${it.task ? ' checked' : ''}" role="img" aria-label="${it.task ? 'Completed' : 'Incomplete'} task"></span>`;
+      return `<li class="task-item">${box}${this._inline(it.text)}${it.sub}</li>`;
+    }).join('')}</${tag}>`;
+    return { html, next: i };
+  },
+
+  /**
+   * Split a GFM table row into trimmed cells (edge pipes dropped).
+   * @param {string} line
+   * @returns {string[]}
+   */
+  _tableCells(line) {
+    return String(line).trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+  },
+
+  /**
+   * Is `line` a GFM delimiter row with exactly `cols` columns?
+   * @param {string} line
+   * @param {number} cols - Column count the header row established.
+   * @returns {boolean}
+   */
+  _isTableDelim(line, cols) {
+    const cells = this._tableCells(line);
+    return cells.length === cols && cells.every((c) => /^:?-+:?$/.test(c));
+  },
+
+  /**
+   * Per-column alignment parsed from a delimiter row (`:---`, `---:`, `:---:`).
+   * @param {string} line
+   * @returns {string[]} '', 'left', 'center' or 'right' per column.
+   */
+  _tableAligns(line) {
+    return this._tableCells(line).map((c) => {
+      const l = c.startsWith(':'), r = c.endsWith(':');
+      return l && r ? 'center' : r ? 'right' : l ? 'left' : '';
+    });
+  },
+
+  /**
+   * Linkify commit SHAs inside already-escaped text: 7–40 hex chars with at
+   * least one a–f digit, so plain decimal numbers never false-positive.
+   * @param {string} html - Escaped HTML text.
+   * @returns {string}
+   */
+  _linkShas(html) {
+    return html.replace(/\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b/gi,
+      (sha) => `<a class="commit-ref" href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/commit/${sha}" target="_blank" rel="noopener">${sha}</a>`);
+  },
+
+  /**
+   * Render inline markdown (code spans, links, emphasis, mentions) for one
+   * text run. Code spans are extracted BEFORE escaping so their contents
+   * stay literal and cannot be re-interpreted as formatting.
+   * @param {string} text
+   * @returns {string}
+   */
+  _inline(text) {
+    const codes = [];
+    let t = String(text).replace(/`([^`\n]+)`/g, (_, c) => `\u0000${codes.push(c) - 1}\u0000`);
+    t = Utils.esc(t);
+
+    /* Images: ![alt](src) — https? sources only, anything else drops to alt. */
+    t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (m, alt, src) =>
+      /^https?:\/\//i.test(src)
+        ? `<img src="${src}" alt="${alt}" loading="lazy">`
+        : alt);
+
+    /* Links: [text](href) — https?/mailto targets only. */
+    t = t.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, (m, txt, href) =>
+      /^(?:https?:\/\/|mailto:)/i.test(href)
+        ? `<a href="${href}" target="_blank" rel="noopener">${txt}</a>`
+        : txt);
+
+    /* Bare URLs — trailing sentence punctuation stays outside the anchor. */
+    t = t.replace(/(^|[\s(])((?:https?:\/\/)[^\s<]+)/g, (m, pre, url) => {
+      const trail = /[.,;:!?)\]'"]+$/.exec(url)?.[0] || '';
+      const clean = url.slice(0, url.length - trail.length);
+      return `${pre}<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${trail}`;
+    });
+
+    /* @mentions → GitHub profile links. */
+    t = t.replace(/(^|[\s(])@([a-zA-Z0-9][a-zA-Z0-9-]*)/g,
+      '$1<a href="https://github.com/$2" target="_blank" rel="noopener">@$2</a>');
+
+    /* Emphasis. */
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    t = t.replace(/(^|[^\w*])\*([^*\n]+)\*(?![\w*])/g, '$1<em>$2</em>');
+    t = t.replace(/(^|[^\w_])_([^_\n]+)_(?![\w_])/g, '$1<em>$2</em>');
+    t = t.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+    /* Restore literal code spans (escaped on the way back in). A span that
+       is exactly a commit SHA links to that commit on GitHub — tracker
+       bodies list commit signatures this way (e.g. COMMITS tabs). */
+    t = t.replace(/\u0000(\d+)\u0000/g, (_, n) => {
+      const code = codes[+n];
+      return /^(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}$/i.test(code)
+        ? `<a class="commit-ref" href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/commit/${code}" target="_blank" rel="noopener"><code>${Utils.esc(code)}</code></a>`
+        : `<code>${Utils.esc(code)}</code>`;
+    });
+    return t;
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * Tip — shared tooltip singleton for all D3 charts.
+ * ------------------------------------------------------------------------- */
+const Tip = {
+  el: null,
+
+  /** Capture the tooltip element. */
+  init() { this.el = Utils.$('#chart-tip'); },
+
+  /**
+   * Show the tooltip with HTML content near a client-space point.
+   * @param {string} html - Pre-sanitized markup.
+   * @param {number} x - clientX.
+   * @param {number} y - clientY.
+   */
+  show(html, x, y) {
+    if (!this.el) return;
+    this.el.innerHTML = html;
+    this.el.classList.add('on');
+    this.move(x, y);
+  },
+
+  /**
+   * Reposition the tooltip, flipping horizontally near the right edge.
+   * @param {number} x - clientX.
+   * @param {number} y - clientY.
+   */
+  move(x, y) {
+    if (!this.el) return;
+    const w = this.el.offsetWidth, h = this.el.offsetHeight;
+    let px = x + 16, py = y - h - 14;
+    if (px + w > window.innerWidth - 10) px = x - w - 16;
+    if (py < 10) py = y + 18;
+    this.el.style.left = `${px}px`;
+    this.el.style.top = `${py}px`;
+  },
+
+  /** Hide the tooltip. */
+  hide() { this.el?.classList.remove('on'); },
+};
+
+/* ----------------------------------------------------------------------------
+ * Activity — exact UTC committer-date counts from default-branch history.
+ * ------------------------------------------------------------------------- */
+const Activity = {
+  /** Build 52 Sunday-first weeks, including merges; never allocate estimates. */
+  fromCommits(commits, timestamp = Date.now()) {
+    const DAY = 864e5;
+    const now = new Date(timestamp);
+    const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const start = today - (new Date(today).getUTCDay() + 51 * 7) * DAY;
+    const days = Array.from({ length: 364 }, (_, index) => ({
+      date: new Date(start + index * DAY), count: 0, future: start + index * DAY > today,
+    }));
+    const seen = new Set();
+    for (const commit of commits) {
+      const date = commit?.commit?.committer?.date;
+      if (!/^[a-f0-9]{40}$/i.test(commit?.sha || '') || typeof date !== 'string' || !Number.isFinite(Date.parse(date))) {
+        throw new Error('Invalid commit history');
+      }
+      if (seen.has(commit.sha)) continue;
+      seen.add(commit.sha);
+      const index = Math.floor((Date.parse(date) - start) / DAY);
+      if (index >= 0 && index < days.length && !days[index].future) days[index].count++;
+    }
+    const weekly = Array.from({ length: 52 }, (_, week) =>
+      days.slice(week * 7, week * 7 + 7).reduce((sum, day) => sum + day.count, 0));
+    return { days, weekly };
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * API — GitHub REST layer.
+ *
+ * Core metadata falls back to the dated snapshot; missing feeds stay missing.
+ * loadAll() settles all requests in parallel and merges whatever succeeded.
+ * ------------------------------------------------------------------------- */
+const API = {
+  /**
+   * Read a cached payload (fresh entries only).
+   * @param {string} key - Endpoint path used as cache key.
+   * @returns {any|null}
+   */
+  _cacheGet(key) {
+    try {
+      const raw = sessionStorage.getItem(CONFIG.cacheKey + key);
+      if (!raw) return null;
+      const { t, d } = JSON.parse(raw);
+      return (Date.now() - t < CONFIG.cacheTTLms) ? d : null;
+    } catch (e) { return null; }
+  },
+
+  /** Write a payload to the cache (best-effort). */
+  _cacheSet(key, data) {
+    try {
+      sessionStorage.setItem(CONFIG.cacheKey + key, JSON.stringify({ t: Date.now(), d: data }));
+    } catch (e) { /* storage full / private mode — non-fatal */ }
+  },
+
+  /**
+   * Fetch JSON from the GitHub API with caching.
+   * @param {string} path - Path relative to the repository base, or an
+   *                        absolute API path ('/search/…', '/users/…').
+   * @param {boolean} [paged=false] - Include pagination headers in a separate cache entry.
+   * @returns {Promise<any>}
+   * @throws {Error} On HTTP errors, including rate limiting (403/429).
+   */
+  async fetchJSON(path, paged = false) {
+    const key = paged ? `page:${path}` : path;
+    const hit = this._cacheGet(key);
+    if (hit !== null) return hit;
+
+    const url = /^\/(?:search|users|orgs|repos)\//.test(path)
+      ? `${CONFIG.apiBase}${path}`
+      : `${CONFIG.apiBase}/repos/${CONFIG.owner}/${CONFIG.repo}${path}`;
+    const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) {
+      const err = new Error(`GitHub API ${res.status} for ${path}`);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    const result = paged ? { data, link: res.headers?.get?.('Link') || '' } : data;
+    this._cacheSet(key, result);
+    return result;
+  },
+
+  /** Read a complete bounded list, following only same-resource GitHub pagination. */
+  async fetchList(path) {
+    const initial = new URL(/^\/(?:orgs|repos)\//.test(path) ? `${CONFIG.apiBase}${path}`
+      : `${CONFIG.apiBase}/repos/${CONFIG.owner}/${CONFIG.repo}${path}`);
+    initial.searchParams.set('per_page', '100');
+    let next = initial;
+    const rows = [], seen = new Set();
+    for (let page = 0; page < 10; page++) {
+      if (seen.has(next.href)) throw new Error('Cyclic pagination');
+      seen.add(next.href);
+      const result = await this.fetchJSON(next.pathname + next.search, true);
+      if (!Array.isArray(result?.data) || result.data.length > 100 || typeof result.link !== 'string') throw new Error('Invalid list page');
+      rows.push(...result.data);
+      const link = /<([^>]+)>;\s*rel="next"/.exec(result.link);
+      if (!link) return rows;
+      next = new URL(link[1], CONFIG.apiBase);
+      const keys = new Set([...initial.searchParams.keys(), ...next.searchParams.keys()]);
+      if (next.origin !== initial.origin || next.pathname !== initial.pathname || next.username || next.password
+          || [...keys].some((key) => !['page', 'before', 'after'].includes(key)
+            && initial.searchParams.getAll(key).join('\0') !== next.searchParams.getAll(key).join('\0'))) {
+        throw new Error('Unsafe pagination scope');
+      }
+    }
+    throw new Error('Incomplete list: pagination limit reached');
+  },
+
+  /**
+   * Exact item counter via the Search API (`total_count`), with a Link-header
+   * fallback and a final `null` so callers can fall back to the snapshot.
+   * @param {'issue'|'pr'} kind
+   * @param {'open'|'closed'} state
+   * @returns {Promise<number|null>}
+   */
+  async fetchCount(kind, state) {
+    const q = encodeURIComponent(`repo:${CONFIG.owner}/${CONFIG.repo} is:${kind} is:${state}`);
+    try {
+      const d = await this.fetchJSON(`/search/issues?q=${q}&per_page=1`);
+      if (typeof d.total_count === 'number') return d.total_count;
+    } catch (e) { /* fall through to Link-header strategy */ }
+
+    try {
+      const path = kind === 'pr' ? '/pulls' : '/issues';
+      const url = `${CONFIG.apiBase}/repos/${CONFIG.owner}/${CONFIG.repo}${path}?state=${state}&per_page=1`;
+      const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(10000) });
+      if (!res.ok) return null;
+      const link = res.headers.get('Link') || '';
+      const m = /[?&]page=(\d+)>;\s*rel="last"/.exec(link);
+      if (m) return parseInt(m[1], 10);
+      const arr = await res.json();
+      return Array.isArray(arr) ? arr.length : null;
+    } catch (e) { return null; }
+  },
+
+  /**
+   * Normalize an issue/PR API object into the row shape the UI renders.
+   * Carries every field the details popup can surface: identity + state,
+   * author, all timestamps, labels, milestone, assignees, comment count,
+   * the markdown body, and (for PRs) draft flag + head/base refs.
+   * @param {object} it - Raw API item.
+   * @param {'issue'|'pr'} kind
+   * @returns {object} Normalized row.
+   */
+  normalizeRow(it, kind) {
+    const isPr = kind === 'pr';
+    return {
+      number: it.number,
+      title: it.title,
+      url: it.html_url,
+      state: it.state,
+      merged: isPr ? Boolean(it.merged_at) : false,
+      draft: isPr ? Boolean(it.draft) : false,
+      labels: (it.labels || []).map((l) => ({ name: l.name, color: l.color || '8b9bb4' })),
+      user: it.user?.login || 'ghost',
+      userUrl: it.user?.html_url || '',
+      avatar: it.user?.avatar_url || '',
+      createdAt: it.created_at || '',
+      updatedAt: it.updated_at || it.created_at || '',
+      closedAt: it.closed_at || null,
+      mergedAt: isPr ? (it.merged_at || null) : null,
+      comments: typeof it.comments === 'number' ? it.comments : null,
+      milestone: it.milestone?.title || '',
+      assignees: (it.assignees || []).map((a) => a.login),
+      head: isPr ? (it.head?.ref || '') : '',
+      base: isPr ? (it.base?.ref || '') : '',
+      body: String(it.body || '').replace(/\r\n?/g, '\n').trim(),
+    };
+  },
+
+  /**
+   * Extract a display-friendly message from a commit object: strips the
+   * "Merge pull request #N ..." wrapper in favor of the PR title line.
+   * @param {object} c - Commit object from /commits.
+   * @returns {{sha:string,msg:string,date:string,url:string}}
+   */
+  normalizeCommit(c) {
+    const lines = (c.commit?.message || '').split('\n').map((s) => s.trim()).filter(Boolean);
+    let msg = lines[0] || 'commit';
+    if (/^merge (pull request|branch)/i.test(msg) && lines[1]) msg = lines[1];
+    return {
+      sha: (c.sha || '').slice(0, 7),
+      msg,
+      date: c.commit?.author?.date || c.commit?.committer?.date,
+      url: c.html_url,
+    };
+  },
+
+  /** Public milestone counters are authoritative; missing feeds have no synthetic fallback. */
+  async fetchMilestones() {
+    const rows = await this.fetchList('/milestones?state=all');
+    if (!Array.isArray(rows) || rows.some((row) => !Number.isSafeInteger(row?.number) || row.number < 1
+        || typeof row.title !== 'string' || !['open', 'closed'].includes(row.state)
+        || ![row.open_issues, row.closed_issues].every((count) => Number.isSafeInteger(count) && count >= 0))) {
+      throw new Error('Invalid milestone feed');
+    }
+    return rows.map((row) => ({ number: row.number, title: row.title, description: typeof row.description === 'string' ? row.description : '',
+      state: row.state, open: row.open_issues, closed: row.closed_issues })).sort((a, b) => a.number - b.number);
+  },
+
+  /** Fetch the complete issue/PR list, ordered by title (including step prefixes). */
+  async fetchMilestoneItems(number) {
+    if (!Number.isSafeInteger(number) || number < 1) throw new Error('Invalid milestone number');
+    const rows = await this.fetchList(`/issues?state=all&milestone=${number}`);
+    return rows.map((row) => {
+      if (!Number.isSafeInteger(row?.number) || row.number < 1 || typeof row.title !== 'string' || !['open', 'closed'].includes(row.state)) {
+        throw new Error('Invalid milestone objective');
+      }
+      return { kind: row.pull_request ? 'pr' : 'issue', number: row.number, title: row.title, state: row.state };
+    }).sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }));
+  },
+
+  /** Read only the public project's active CONFLUX cards and its actual status definitions. */
+  async fetchProject() {
+    const path = `/orgs/${CONFIG.owner}/projectsV2/${CONFIG.roadmapProject}`;
+    const project = await this.fetchJSON(path);
+    if (project?.public !== true) throw new Error('Public project unavailable');
+    const fields = await this.fetchList(`${path}/fields`);
+    const field = fields.find((entry) => entry?.name === 'Status' && entry.data_type === 'single_select');
+    if (!Number.isSafeInteger(field?.id) || !Array.isArray(field.options)) throw new Error('Project status definitions unavailable');
+    const columns = field.options.map((option) => {
+      if (typeof option?.id !== 'string' || typeof option.name?.raw !== 'string') throw new Error('Invalid project status');
+      return { id: option.id, name: option.name.raw };
+    });
+    if (new Set(columns.map((column) => column.id)).size !== columns.length) throw new Error('Duplicate project status');
+    const query = new URLSearchParams({ fields: String(field.id), q: `repo:${CONFIG.owner}/${CONFIG.repo}` });
+    const raw = await this.fetchList(`${path}/items?${query}`);
+    const repository = `${CONFIG.apiBase}/repos/${CONFIG.owner}/${CONFIG.repo}`;
+    const items = [];
+    for (const item of raw) {
+      if (item?.archived_at) continue;
+      const content = item?.content;
+      const kind = item?.content_type === 'PullRequest' ? 'pr' : item?.content_type === 'Issue' ? 'issue' : null;
+      if (!kind || content?.url !== `${repository}/${kind === 'pr' ? 'pulls' : 'issues'}/${content?.number}`) continue;
+      if (!Number.isSafeInteger(item.id) || !Number.isSafeInteger(content.number) || content.number < 1
+          || typeof content.title !== 'string' || !['open', 'closed'].includes(content.state) || !Array.isArray(item.fields)) {
+        throw new Error('Invalid project item');
+      }
+      const status = item.fields.find((entry) => entry?.id === field.id)?.value?.id;
+      items.push({ id: item.id, kind, number: content.number, title: content.title, state: content.state,
+        milestone: Number.isSafeInteger(content.milestone?.number) ? content.milestone.number : null,
+        status: typeof status === 'string' ? status : null });
+    }
+    if (new Set(items.map((item) => item.id)).size !== items.length) throw new Error('Duplicate project item');
+    return { columns, items };
+  },
+
+  /** Aggregate latest HEAD checks and legacy statuses; incomplete results are unknown. */
+  async fetchChecks(sha) {
+    const base = `/commits/${encodeURIComponent(sha)}`;
+    const [runs, statuses] = await Promise.all([
+      this.fetchJSON(`${base}/check-runs?per_page=100&filter=latest`),
+      this.fetchJSON(`${base}/status?per_page=100`),
+    ]);
+    if (![ [runs, 'check_runs'], [statuses, 'statuses'] ].every(([body, key]) =>
+      Array.isArray(body?.[key]) && body[key].length <= 100
+      && Number.isInteger(body.total_count) && body.total_count === body[key].length)) {
+      throw new Error('Incomplete checks');
+    }
+    const states = runs.check_runs.map((run) => run?.status === 'completed' ? run.conclusion
+      : ['queued', 'in_progress', 'pending', 'waiting', 'requested'].includes(run?.status) ? 'pending' : 'unknown')
+      .concat(statuses.statuses.map((status) => status?.state));
+    const passed = ['success', 'neutral', 'skipped'];
+    const failed = ['failure', 'timed_out', 'action_required', 'startup_failure', 'error'];
+    const cancelled = ['cancelled', 'stale'];
+    if (states.some((state) => ![...passed, ...failed, ...cancelled, 'pending'].includes(state))) {
+      throw new Error('Unrecognized checks');
+    }
+    return {
+      state: !states.length ? 'none' : states.some((state) => failed.includes(state)) ? 'failure'
+        : states.includes('pending') ? 'pending' : states.some((state) => cancelled.includes(state)) ? 'neutral' : 'success',
+      passed: states.filter((state) => passed.includes(state)).length,
+      total: states.length,
+    };
+  },
+
+  /** Fetch complete, SHA-pinned history for the chart window, at most 1,000 commits. */
+  async fetchActivity(sha) {
+    const now = Date.now();
+    const calendar = Activity.fromCommits([], now);
+    const today = calendar.days.findLast((day) => !day.future).date.getTime();
+    const query = new URLSearchParams({
+      sha, since: calendar.days[0].date.toISOString(),
+      until: new Date(today + 864e5).toISOString(), per_page: '100',
+    });
+    const commits = [];
+    for (let page = 1; page <= 10; page++) {
+      const batch = await this.fetchJSON(`/commits?${query}&page=${page}`);
+      if (!Array.isArray(batch) || batch.length > 100) throw new Error('Invalid commit history page');
+      commits.push(...batch);
+      if (batch.length < 100) return Activity.fromCommits(commits, now);
+    }
+    throw new Error('Commit history exceeds the complete-history limit');
+  },
+
+  /** Safely unwrap a PromiseSettledResult. @returns {any|null} */
+  _ok(r) { return r.status === 'fulfilled' ? r.value : null; },
+
+  /**
+   * Load every dataset in parallel and merge into the normalized DATA object
+   * consumed by the renderers. Core metadata can use SNAPSHOT; failed feeds
+   * never fabricate records. `mode` reports whether the core feed is live.
+   * @returns {Promise<object>} DATA
+   */
+  async loadAll() {
+    const P = CONFIG.perPage;
+    const jobs = {
+      repo: this.fetchJSON(''),
+      languages: this.fetchJSON('/languages'),
+      contributors: this.fetchJSON(`/contributors?per_page=${P.contributors}`),
+      branches: this.fetchJSON(`/branches?per_page=${P.branches}`),
+      releases: this.fetchJSON(`/releases?per_page=${P.releases}`),
+      milestones: this.fetchMilestones(),
+      project: this.fetchProject(),
+      commits: this.fetchJSON(`/commits?per_page=${P.commits}`),
+      issuesOpen: this.fetchJSON(`/issues?state=open&per_page=${P.issues}&sort=updated&direction=desc`),
+      issuesClosed: this.fetchJSON(`/issues?state=closed&per_page=${P.issues}&sort=updated&direction=desc`),
+      pullsOpen: this.fetchJSON(`/pulls?state=open&per_page=${P.pulls}&sort=updated&direction=desc`),
+      pullsClosed: this.fetchJSON(`/pulls?state=closed&per_page=${P.pulls}&sort=updated&direction=desc`),
+      cIssuesOpen: this.fetchCount('issue', 'open'),
+      cIssuesClosed: this.fetchCount('issue', 'closed'),
+      cPrsOpen: this.fetchCount('pr', 'open'),
+      cPrsClosed: this.fetchCount('pr', 'closed'),
+    };
+    const keys = Object.keys(jobs);
+    const settled = await Promise.allSettled(keys.map((k) => jobs[k]));
+    const R = {};
+    keys.forEach((k, i) => { R[k] = this._ok(settled[i]); });
+
+    const live = Boolean(R.repo && R.repo.full_name);
+    const repo = R.repo || SNAPSHOT.repo;
+
+    /* Pin pagination to the live default branch's immutable HEAD. */
+    const defaultHead = Array.isArray(R.branches)
+      ? R.branches.find((branch) => branch.name === repo.default_branch)?.commit?.sha : null;
+    const activityJob = live && /^[a-f0-9]{40}$/i.test(defaultHead || '')
+      ? this.fetchActivity(defaultHead).catch(() => null) : Promise.resolve(null);
+
+    /* Languages (bytes per language). */
+    const languages = (R.languages && Object.keys(R.languages).length)
+      ? R.languages : SNAPSHOT.languages;
+
+    /* Contributors — GitHub Apps (login suffixed `[bot]`, or API type
+       "Bot") are hidden; regular user accounts stay even when the login
+       ends in `-bot` (e.g. kyaulabs-bot). */
+    const contributors = ((Array.isArray(R.contributors) && R.contributors.length)
+      ? R.contributors.map((c) => ({
+          login: c.login, contributions: c.contributions,
+          avatar_url: c.avatar_url, html_url: c.html_url, type: c.type,
+        }))
+      : SNAPSHOT.contributors)
+      .filter((c) => c.type !== 'Bot' && !Utils.isAppLogin(c.login));
+
+    /* Branches — `release/X.Y.Z` maintenance branches are hidden from the
+       topology view by default; every other branch renders. */
+    const branches = ((Array.isArray(R.branches) && R.branches.length)
+      ? R.branches.map((b) => ({
+          name: b.name, sha: b.commit?.sha || '', protected: Boolean(b.protected),
+          isDefault: b.name === repo.default_branch,
+        }))
+      : SNAPSHOT.branches.map((b) => ({ ...b, isDefault: b.name === repo.default_branch })))
+      .filter((b) => !Utils.isReleaseBranch(b.name));
+
+    /* Resolve each HEAD's author/date and checks independently. Repository
+       push time is unrelated; missing metadata must not hide other fields. */
+    if (Array.isArray(R.branches) && R.branches.length) {
+      // Enrich the two long-lived branches automatically; every branch links to
+      // its HEAD checks. Fetching three extra URLs for every feature branch
+      // would exhaust GitHub's unauthenticated budget on one page load.
+      await Promise.all(branches.filter(b => b.isDefault || b.name === 'develop').map(async (branch) => {
+        if (!branch.sha) return;
+        const known = Array.isArray(R.commits) && R.commits.find((commit) => commit.sha === branch.sha);
+        const [headResult, checksResult] = await Promise.allSettled([
+          known || this.fetchJSON(`/commits/${encodeURIComponent(branch.sha)}`),
+          this.fetchChecks(branch.sha),
+        ]);
+        const head = this._ok(headResult);
+        const checks = this._ok(checksResult);
+        const date = head?.commit?.committer?.date;
+        if (typeof date === 'string' && Number.isFinite(Date.parse(date))) branch.committedAt = date;
+        if (head?.author) branch.author = head.author;
+        if (checks) branch.checks = checks;
+      }));
+    }
+
+    const activity = await activityJob;
+    const activityAvailable = activity !== null;
+    const { days, weekly } = activity || Activity.fromCommits([]);
+
+    /* Preserve full release notes. Empty feeds remain empty; failures are labeled. */
+    const liveReleases = Array.isArray(R.releases)
+      ? R.releases.map((r, i) => ({
+          tag: r.tag_name, name: r.name || r.tag_name,
+          body: (r.body || '').replace(/\r\n?/g, '\n').trim(),
+          date: r.published_at || r.created_at, url: r.html_url,
+          assets: Array.isArray(r.assets) ? r.assets.filter((asset) => typeof asset?.name === 'string' && typeof asset.browser_download_url === 'string')
+            .map((asset) => ({ name: asset.name, url: asset.browser_download_url })) : [],
+          latest: i === 0, synthetic: false,
+        }))
+      : null;
+    const releases = liveReleases || [];
+
+    /* Ticker commits. */
+    const ticker = (Array.isArray(R.commits) && R.commits.length)
+      ? R.commits.map((c) => API.normalizeCommit(c)).filter((c) => c.sha)
+      : [];
+
+    /* The issues endpoint interleaves PRs. Filter them without inventing
+       replacement rows when lists fail or the current page contains only PRs. */
+    const asIssues = (raw) => (Array.isArray(raw)
+      ? raw.filter((it) => !it.pull_request).map((it) => API.normalizeRow(it, 'issue'))
+      : null);
+    const asPrs = (raw) => (Array.isArray(raw)
+      ? raw.map((it) => API.normalizeRow(it, 'pr'))
+      : null);
+    const issueRows = { open: asIssues(R.issuesOpen) || [], closed: asIssues(R.issuesClosed) || [] };
+    const prRows = { open: asPrs(R.pullsOpen) || [], closed: asPrs(R.pullsClosed) || [] };
+
+    /* Exact counters (search API) → snapshot fallback. */
+    const counts = {
+      issuesOpen: R.cIssuesOpen ?? SNAPSHOT.counts.issuesOpen,
+      issuesClosed: R.cIssuesClosed ?? SNAPSHOT.counts.issuesClosed,
+      prsOpen: R.cPrsOpen ?? SNAPSHOT.counts.prsOpen,
+      prsClosed: R.cPrsClosed ?? SNAPSHOT.counts.prsClosed,
+    };
+
+    return {
+      mode: live ? 'live' : 'sim',
+      activityAvailable,
+      missingFeeds: [...keys.filter((key) => R[key] == null), ...(!activityAvailable ? ['activity'] : [])],
+      repo, weekly, languages, contributors, branches, releases, ticker,
+      milestones: R.milestones, project: R.project,
+      issues: issueRows,
+      pulls: prRows,
+      counts,
+      days,
+      releasesSynthetic: !liveReleases,
+    };
+  },
+};
+
+const Charts = {
+  /**
+   * Brand palette for chart chrome.
+   * @returns {{accent:string,accent2:string,accent3:string,ink:string,ink2:string,
+   *           grid:string,heat:string[]}}
+   */
+  palette() {
+    const v = Utils.cssVar;
+    return {
+      accent: v('--accent') || '#ff877d',
+      accent2: v('--accent-2') || '#58d6c3',
+      accent3: v('--accent-3') || '#f2c568',
+      ink: v('--ink-0') || '#f5f4f0',
+      ink2: v('--ink-2') || '#b5b7be',
+      grid: v('--grid-line') || 'rgba(148,163,184,0.1)',
+      heat: [v('--heat-0'), v('--heat-1'), v('--heat-2'), v('--heat-3'), v('--heat-4')],
+    };
+  },
+
+  /**
+   * Build every chart from the loaded DATA object.
+   * @param {object} data - DATA from API.loadAll().
+   */
+  buildAll(data) {
+    if (!window.d3) {
+      document.querySelectorAll('.chart-mount').forEach((el) => {
+        el.innerHTML = '<p class="empty-note">// visualization engine offline — D3 failed to load</p>';
+      });
+      return;
+    }
+    if (data.activityAvailable !== false) this.activity(Utils.$('#chart-activity'), data);
+    else if (Utils.$('#chart-activity')) Utils.$('#chart-activity').innerHTML = '<p class="empty-note">// commit history unavailable or incomplete</p>';
+    this.donut(Utils.$('#chart-langs'), Utils.$('#langs-legend'), data.languages);
+    const iTotal = data.counts.issuesOpen + data.counts.issuesClosed;
+    const pTotal = data.counts.prsOpen + data.counts.prsClosed;
+    this.gauge(Utils.$('#gauge-issues'), iTotal ? data.counts.issuesClosed / iTotal : 0, 'RESOLVED');
+    this.gauge(Utils.$('#gauge-prs'), pTotal ? data.counts.prsClosed / pTotal : 0, 'THROUGHPUT');
+    if (data.activityAvailable !== false) this.heatmap(Utils.$('#chart-heatmap'), data.days);
+    else if (Utils.$('#chart-heatmap')) Utils.$('#chart-heatmap').innerHTML = '<p class="empty-note">// matrix unavailable without complete commit history</p>';
+  },
+
+  /**
+   * Weekly commit waveform — gradient area + signal line + hover crosshair.
+   * @param {Element} el - Mount point.
+   * @param {object} data - DATA (uses data.weekly).
+   */
+  activity(el, data) {
+    if (!el) return;
+    el.innerHTML = '';
+    const pal = this.palette();
+    const W = el.clientWidth, H = el.clientHeight;
+    if (!W || !H) return;
+    const m = { t: 16, r: 16, b: 30, l: 44 };
+
+    const DAY = 864e5;
+    const now = new Date();
+    const utcToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const endSunday = utcToday - new Date(utcToday).getUTCDay() * DAY;
+    const pts = data.weekly.map((v, i) => ({
+      date: new Date(endSunday - (data.weekly.length - 1 - i) * 7 * DAY),
+      v,
+    }));
+
+    const x = d3.scaleUtc()
+      .domain([pts[0].date, new Date(endSunday + 6 * DAY)])
+      .range([m.l, W - m.r]);
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(pts, (d) => d.v) * 1.12 || 10])
+      .nice()
+      .range([H - m.b, m.t]);
+
+    const svg = d3.select(el).append('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('preserveAspectRatio', 'none');
+
+    /* Vertical + horizontal gridlines. */
+    svg.append('g')
+      .attr('transform', `translate(0,${H - m.b})`)
+      .call(d3.axisBottom(x).ticks(Math.max(3, Math.floor(W / 120))).tickSize(-(H - m.t - m.b)).tickFormat(''))
+      .call((g) => g.selectAll('line').attr('stroke', pal.grid))
+      .call((g) => g.selectAll('.domain').remove());
+    svg.append('g')
+      .attr('transform', `translate(${m.l},0)`)
+      .call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)).tickFormat(''))
+      .call((g) => g.selectAll('line').attr('stroke', pal.grid))
+      .call((g) => g.selectAll('.domain').remove());
+
+    /* Axis labels. */
+    svg.append('g')
+      .attr('transform', `translate(0,${H - m.b})`)
+      .call(d3.axisBottom(x).ticks(Math.max(3, Math.floor(W / 120))).tickSize(0).tickPadding(9).tickFormat(d3.utcFormat('%b')))
+      .call((g) => g.selectAll('text').attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 10))
+      .call((g) => g.selectAll('.domain').remove());
+    svg.append('g')
+      .attr('transform', `translate(${m.l},0)`)
+      .call(d3.axisLeft(y).ticks(4).tickSize(0).tickPadding(8))
+      .call((g) => g.selectAll('text').attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 10))
+      .call((g) => g.selectAll('.domain').remove());
+
+    /* Gradient definitions for the area fill and the signal line. */
+    const defs = svg.append('defs');
+    const gid = `ag${Math.floor(Math.random() * 1e6)}`;
+    const grad = defs.append('linearGradient').attr('id', gid)
+      .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent).attr('stop-opacity', 0.34);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent).attr('stop-opacity', 0.01);
+    const lid = `lg${Math.floor(Math.random() * 1e6)}`;
+    const lgrad = defs.append('linearGradient').attr('id', lid)
+      .attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 0);
+    lgrad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
+    lgrad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent);
+
+    /* Average reference line. */
+    const avg = d3.mean(pts, (d) => d.v) || 0;
+    svg.append('line')
+      .attr('x1', m.l).attr('x2', W - m.r)
+      .attr('y1', y(avg)).attr('y2', y(avg))
+      .attr('stroke', pal.ink2).attr('stroke-dasharray', '3 5').attr('stroke-opacity', 0.55);
+    svg.append('text')
+      .attr('x', W - m.r).attr('y', y(avg) - 5)
+      .attr('text-anchor', 'end').attr('fill', pal.ink2)
+      .attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 9)
+      .text(`AVG ${Math.round(avg)}`);
+
+    /* Area + line. */
+    const area = d3.area().x((d) => x(d.date)).y0(H - m.b).y1((d) => y(d.v))
+      .curve(d3.curveMonotoneX);
+    const line = d3.line().x((d) => x(d.date)).y((d) => y(d.v))
+      .curve(d3.curveMonotoneX);
+
+    svg.append('path').datum(pts)
+      .attr('d', area)
+      .attr('fill', `url(#${gid})`)
+      .attr('opacity', Utils.reducedMotion ? 1 : 0)
+      .call((sel) => {
+        if (!Utils.reducedMotion) sel.transition().duration(900).attr('opacity', 1);
+      });
+
+    const linePath = svg.append('path').datum(pts)
+      .attr('d', line)
+      .attr('fill', 'none')
+      .attr('stroke', `url(#${lid})`)
+      .attr('stroke-width', 2)
+      .attr('stroke-linejoin', 'round');
+
+    /* Draw-on animation for the signal line. */
+    if (!Utils.reducedMotion) {
+      const len = linePath.node().getTotalLength();
+      linePath
+        .attr('stroke-dasharray', `${len} ${len}`)
+        .attr('stroke-dashoffset', len)
+        .transition().duration(1300).ease(d3.easeCubicOut)
+        .attr('stroke-dashoffset', 0)
+        .on('end', function () { d3.select(this).attr('stroke-dasharray', null); });
+    }
+
+    /* Current-week end point with halo. */
+    const last = pts[pts.length - 1];
+    svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v))
+      .attr('r', 8).attr('fill', Utils.rgba(pal.accent, 0.22));
+    svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v))
+      .attr('r', 3.4).attr('fill', pal.accent)
+      .attr('stroke', Utils.cssVar('--panel-solid') || '#1a1d22').attr('stroke-width', 1.5);
+
+    /* Hover crosshair: rule + focus dot + tooltip. */
+    const rule = svg.append('line')
+      .attr('y1', m.t).attr('y2', H - m.b)
+      .attr('stroke', pal.accent).attr('stroke-opacity', 0)
+      .attr('stroke-dasharray', '2 3');
+    const focus = svg.append('circle')
+      .attr('r', 4).attr('fill', pal.accent)
+      .attr('stroke', Utils.cssVar('--panel-solid') || '#1a1d22')
+      .attr('stroke-width', 2).attr('opacity', 0);
+    const bisect = d3.bisector((d) => d.date).center;
+
+    svg.append('rect')
+      .attr('x', m.l).attr('y', m.t)
+      .attr('width', W - m.l - m.r).attr('height', H - m.t - m.b)
+      .attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [mx] = d3.pointer(ev);
+        const i = bisect(pts, x.invert(mx));
+        const d = pts[Utils.clamp(i, 0, pts.length - 1)];
+        rule.attr('x1', x(d.date)).attr('x2', x(d.date)).attr('stroke-opacity', 0.6);
+        focus.attr('cx', x(d.date)).attr('cy', y(d.v)).attr('opacity', 1);
+        Tip.show(
+          `<span class="tt-title">week of ${Utils.fmtDate(d.date, 'UTC')}</span>` +
+          `<span class="tt-val">${Utils.fmtInt(d.v)} commits</span>` +
+          `<span class="tt-sub">${d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })} — ${new Date(d.date.getTime() + 6 * DAY).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>`,
+          ev.clientX, ev.clientY,
+        );
+      })
+      .on('pointerleave', () => {
+        rule.attr('stroke-opacity', 0);
+        focus.attr('opacity', 0);
+        Tip.hide();
+      });
+  },
+
+  /**
+   * Language composition donut with DOM legend.
+   * @param {Element} el - SVG mount.
+   * @param {Element} legendEl - <ul> legend mount.
+   * @param {Object<string, number>} languages - Language → bytes.
+   */
+  donut(el, legendEl, languages) {
+    if (!el) return;
+    el.innerHTML = '';
+    if (legendEl) legendEl.innerHTML = '';
+    const pal = this.palette();
+    const W = el.clientWidth, H = el.clientHeight;
+    if (!W || !H) return;
+
+    const entries = Object.entries(languages)
+      .map(([name, bytes]) => ({ name, bytes }))
+      .sort((a, b) => b.bytes - a.bytes);
+    const total = d3.sum(entries, (d) => d.bytes) || 1;
+    /* Brand spectral ramp: slices are colored by rank along an
+       accent → accent-2 → accent-3 interpolation (cyan → violet → pink),
+       so the donut always matches the active theme's palette. */
+    const ramp = d3.interpolateRgbBasis([pal.accent, pal.accent2, pal.accent3]);
+    const colorOf = (name, i) => ramp(entries.length > 1 ? i / (entries.length - 1) : 0);
+
+    const R = Math.min(W, H) / 2 - 6;
+    const svg = d3.select(el).append('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`);
+    const g = svg.append('g').attr('transform', `translate(${W / 2},${H / 2})`);
+
+    const pie = d3.pie().value((d) => d.bytes).sort(null).padAngle(0.018)(entries);
+    const arc = d3.arc().innerRadius(R * 0.68).outerRadius(R).cornerRadius(3);
+    const arcHover = d3.arc().innerRadius(R * 0.68).outerRadius(R + 7).cornerRadius(3);
+
+    /* Center readout. */
+    g.append('text').attr('text-anchor', 'middle').attr('y', -4)
+      .attr('fill', pal.ink).attr('font-family', Utils.cssVar('--font-mono'))
+      .attr('font-weight', 700).attr('font-size', 17)
+      .text(Utils.fmtBytes(total));
+    g.append('text').attr('text-anchor', 'middle').attr('y', 15)
+      .attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono'))
+      .attr('font-size', 8.5).attr('letter-spacing', 2.5)
+      .text('SOURCE');
+
+    const paths = g.selectAll('path').data(pie).join('path')
+      .attr('fill', (d, i) => colorOf(d.data.name, i))
+      .attr('stroke', 'none')
+      .style('cursor', 'default')
+      .on('pointerenter', function (ev, d) {
+        d3.select(this).transition().duration(160).attr('d', arcHover);
+        Tip.show(
+          `<span class="tt-title">${Utils.esc(d.data.name)}</span>` +
+          `<span class="tt-val">${Utils.fmtBytes(d.data.bytes)}</span>` +
+          `<span class="tt-sub">${((d.data.bytes / total) * 100).toFixed(1)}% of source</span>`,
+          ev.clientX, ev.clientY,
+        );
+      })
+      .on('pointermove', (ev) => Tip.move(ev.clientX, ev.clientY))
+      .on('pointerleave', function () {
+        d3.select(this).transition().duration(160).attr('d', arc);
+        Tip.hide();
+      });
+
+    /* Sweep-in animation (skipped for reduced motion). */
+    if (Utils.reducedMotion) {
+      paths.attr('d', arc);
+    } else {
+      paths.transition().duration(850).ease(d3.easeCubicOut)
+        .attrTween('d', (d) => {
+          const interp = d3.interpolate({ startAngle: d.startAngle, endAngle: d.startAngle }, d);
+          return (t) => arc(interp(t));
+        });
+    }
+
+    /* Legend. */
+    if (legendEl) {
+      legendEl.innerHTML = entries.map((d, i) => `
+        <li>
+          <span class="legend-swatch" style="background:${colorOf(d.name, i)}"></span>
+          <span class="legend-name">${Utils.esc(d.name)}</span>
+          <span class="legend-val">${((d.bytes / total) * 100).toFixed(1)}%</span>
+        </li>`).join('');
+    }
+  },
+
+  /**
+   * Radial resolution gauge (260° sweep).
+   * @param {Element} el - Mount point.
+   * @param {number} ratio - Value in [0, 1].
+   * @param {string} caption - Word under the percentage.
+   */
+  gauge(el, ratio, caption) {
+    if (!el) return;
+    el.innerHTML = '';
+    const pal = this.palette();
+    const W = el.clientWidth, H = el.clientHeight;
+    if (!W || !H) return;
+    const r = Utils.clamp(ratio, 0, 1);
+
+    const R = Math.min(W, H * 1.35) / 2 - 10;
+    const svg = d3.select(el).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+    const g = svg.append('g').attr('transform', `translate(${W / 2},${H / 2 + R * 0.14})`);
+
+    const A0 = -Math.PI * (130 / 180), A1 = Math.PI * (130 / 180);
+    const arcGen = d3.arc().innerRadius(R * 0.78).outerRadius(R).cornerRadius(R * 0.11);
+
+    /* Track. */
+    g.append('path')
+      .attr('d', arcGen({ startAngle: A0, endAngle: A1 }))
+      .attr('fill', Utils.rgba(pal.ink2, 0.16));
+
+    /* Gradient for the value arc. */
+    const gid = `gg${Math.floor(Math.random() * 1e6)}`;
+    const grad = svg.append('defs').append('linearGradient')
+      .attr('id', gid).attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 1);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', pal.accent2);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', pal.accent);
+
+    /* Value arc (tweened). */
+    const value = g.append('path').attr('fill', `url(#${gid})`);
+    if (Utils.reducedMotion) {
+      value.attr('d', arcGen({ startAngle: A0, endAngle: A0 + (A1 - A0) * r }));
+    } else {
+      value.transition().duration(1100).ease(d3.easeCubicOut)
+        .attrTween('d', () => {
+          const interp = d3.interpolate(A0, A0 + (A1 - A0) * r);
+          return (t) => arcGen({ startAngle: A0, endAngle: interp(t) });
+        });
+    }
+
+    /* Quartile tick marks. */
+    for (let i = 0; i <= 4; i++) {
+      const a = A0 + ((A1 - A0) * i) / 4;
+      const inner = R + 5, outer = R + 10;
+      g.append('line')
+        .attr('x1', Math.sin(a) * inner).attr('y1', -Math.cos(a) * inner)
+        .attr('x2', Math.sin(a) * outer).attr('y2', -Math.cos(a) * outer)
+        .attr('stroke', pal.ink2).attr('stroke-opacity', 0.5).attr('stroke-width', 1.4);
+    }
+
+    /* Center readout. */
+    g.append('text').attr('text-anchor', 'middle').attr('y', R * -0.02)
+      .attr('fill', pal.ink).attr('font-family', Utils.cssVar('--font-mono'))
+      .attr('font-weight', 700).attr('font-size', 26)
+      .text(`${Math.round(r * 100)}%`);
+    g.append('text').attr('text-anchor', 'middle').attr('y', R * 0.16)
+      .attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono'))
+      .attr('font-size', 8.5).attr('letter-spacing', 3)
+      .text(caption);
+  },
+
+  /**
+   * Commit matrix — a 52×7 calendar heatmap.
+   * Each cell counts actual commits by UTC committer date.
+   * @param {Element} el - Mount point.
+   * @param {Array<{date:Date,count:number,future:boolean}>} days
+   */
+  heatmap(el, days) {
+    if (!el) return;
+    el.innerHTML = '';
+    const pal = this.palette();
+    const available = el.clientWidth;
+    if (!available) return;
+
+    const cols = Math.ceil(days.length / 7);
+    const showAxis = available >= 560;
+    const padL = showAxis ? 30 : 6, padT = 20, padR = 6, gap = 3;
+    const cell = Math.max(8, Math.floor((available - padL - padR - gap * (cols - 1)) / cols));
+    const W = Math.max(available, padL + cols * (cell + gap) - gap + padR);
+    const legendTop = padT + 7 * (cell + gap) - gap + Math.max(10, cell * 0.75);
+    const H = Math.ceil(legendTop + cell + 10);
+
+    /* Intensity buckets over non-zero days. */
+    const nz = days.filter((d) => d.count > 0).map((d) => d.count).sort((a, b) => a - b);
+    const q = (p) => nz.length ? nz[Math.min(nz.length - 1, Math.floor(p * nz.length))] : 0;
+    const stops = [0, q(0.4), q(0.65), q(0.85)];
+    const bucket = (v) => {
+      if (v <= 0) return 0;
+      if (v <= stops[1]) return 1;
+      if (v <= stops[2]) return 2;
+      if (v <= stops[3]) return 3;
+      return 4;
+    };
+
+    const svg = d3.select(el).append('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('width', W).attr('height', H);
+
+    /* Month labels along the top. */
+    let prevMonth = -1;
+    for (let c = 0; c < cols; c++) {
+      const d0 = days[c * 7].date;
+      if (d0.getUTCMonth() !== prevMonth) {
+        prevMonth = d0.getUTCMonth();
+        svg.append('text')
+          .attr('x', padL + c * (cell + gap)).attr('y', 10)
+          .attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 9.5)
+          .text(d0.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }));
+      }
+    }
+
+    /* Weekday labels (Mon / Wed / Fri). */
+    if (showAxis) {
+      [['MON', 1], ['WED', 3], ['FRI', 5]].forEach(([txt, row]) => {
+        svg.append('text')
+          .attr('x', 0).attr('y', padT + row * (cell + gap) + cell * 0.78)
+          .attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', 8.5)
+          .text(txt);
+      });
+    }
+
+    /* Day cells. */
+    const rects = svg.selectAll('rect.day').data(days).join('rect')
+      .attr('class', 'day')
+      .attr('x', (d, i) => padL + Math.floor(i / 7) * (cell + gap))
+      .attr('y', (d, i) => padT + (i % 7) * (cell + gap))
+      .attr('width', cell).attr('height', cell).attr('rx', 2.4)
+      .attr('fill', (d) => (d.future ? 'transparent' : pal.heat[bucket(d.count)]))
+      .attr('stroke', (d) => (d.future ? 'none' : Utils.rgba(pal.ink2, 0.10)))
+      .attr('stroke-width', 1)
+      .style('cursor', (d) => (d.future ? 'default' : 'crosshair'))
+      .on('pointerenter', function (ev, d) {
+        if (d.future) return;
+        d3.select(this).attr('stroke', pal.accent).attr('stroke-width', 1.4);
+        Tip.show(
+          `<span class="tt-title">${Utils.fmtDate(d.date, 'UTC')}</span>` +
+          `<span class="tt-val">${d.count ? `${Utils.fmtInt(d.count)} commit${d.count > 1 ? 's' : ''}` : 'no commits'}</span>`,
+          ev.clientX, ev.clientY,
+        );
+      })
+      .on('pointermove', (ev, d) => { if (!d.future) Tip.move(ev.clientX, ev.clientY); })
+      .on('pointerleave', function (ev, d) {
+        d3.select(this).attr('stroke', d.future ? 'none' : Utils.rgba(pal.ink2, 0.10)).attr('stroke-width', 1);
+        Tip.hide();
+      });
+
+    /* Cascade-in animation. */
+    if (!Utils.reducedMotion) {
+      rects.attr('opacity', 0)
+        .transition().delay((d, i) => i * 1.6).duration(280)
+        .attr('opacity', 1);
+    }
+
+    /* The complete legend ends at the final grid cell, not the SVG padding. */
+    const fontSize = Math.max(8, cell * 0.8);
+    const labelGap = cell * 0.4;
+    const swatchesX = -(fontSize * 2.5 + labelGap + pal.heat.length * cell + (pal.heat.length - 1) * gap);
+    const gridRight = padL + cols * (cell + gap) - gap;
+    const lg = svg.append('g').attr('class', 'matrix-legend')
+      .attr('transform', `translate(${gridRight},${legendTop})`);
+    [[swatchesX - labelGap, 'LESS'], [0, 'MORE']].forEach(([x, label]) => {
+      lg.append('text').attr('x', x).attr('y', cell / 2)
+        .attr('text-anchor', 'end').attr('dominant-baseline', 'central')
+        .attr('fill', pal.ink2).attr('font-family', Utils.cssVar('--font-mono')).attr('font-size', fontSize)
+        .text(label);
+    });
+    pal.heat.forEach((color, index) => {
+      lg.append('rect')
+        .attr('x', swatchesX + index * (cell + gap)).attr('y', 0)
+        .attr('width', cell).attr('height', cell).attr('rx', 2.4)
+        .attr('fill', color).attr('stroke', Utils.rgba(pal.ink2, 0.12));
+    });
+    if (W > available) el.setAttribute('tabindex', '0');
+    else el.removeAttribute('tabindex');
+    el.scrollLeft = el.scrollWidth - el.clientWidth; // Start with the latest weeks, not an empty clipped year.
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * UI — DOM renderers. Every renderer defensively escapes API strings.
+ * ------------------------------------------------------------------------- */
+const UI = {
+  /** Brand controls complement repository-specific Font Awesome Free 7.3.1; local, attributed SVG symbols, not a remote kit. */
+  ICONS: Object.fromEntries(Object.entries({
+    star: 'star', fork: 'code-fork', eye: 'eye', issue: 'circle-dot',
+    scale: 'scale-balanced', clock: 'clock', commit: 'code-commit', pr: 'code-pull-request',
+    users: 'users', code: 'code', calendar: 'calendar', branch: 'code-branch', shield: 'shield-halved',
+    chevron: 'chevron-down', check: 'check', close: 'xmark', external: 'arrow-up-right-from-square',
+    copy: 'copy', pause: 'pause', play: 'play', profile: 'angles-right', download: 'download',
+    closed: 'circle-check', merged: 'code-merge', github: 'github', document: 'file-lines',
+  }).map(([key, name]) => {
+    const brand = { pause: 'pause', play: 'play', close: 'close', check: 'check', chevron: 'chevron-down', external: 'external-link', download: 'download', profile: 'user' }[key];
+    const href = brand ? `brand/assets/ui-icons/sprite.svg#${brand}` : `vendor/fontawesome-icons.svg#${name}`;
+    return [key, `<svg class="fa-icon${key === 'chevron' ? ' release-chevron' : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="${href}" width="24" height="24"></use></svg>`];
+  })),
+
+
+  /**
+   * Render the hero statistic chips from repository metadata. Every chip is
+   * a link to its corresponding GitHub page: stars and watchers open their
+   * respective listings, forks opens the create-a-fork flow, and the rest
+   * their relevant repository pages. License/commits resolve against the
+   * repo's default branch.
+   * @param {object} data
+   */
+  renderChips(data) {
+    const el = Utils.$('#hero-chips');
+    if (!el) return;
+    const r = data.repo;
+    const base = `https://github.com/${CONFIG.owner}/${CONFIG.repo}`;
+    const branch = r.default_branch || 'develop';
+    const chips = [
+      [this.ICONS.star, Utils.fmtCompact(r.stargazers_count ?? 0), 'stars', `${base}/stargazers`, 'View stargazers on GitHub'],
+      [this.ICONS.fork, Utils.fmtCompact(r.forks_count ?? 0), 'forks', `${base}/fork`, 'Fork the repository on GitHub'],
+      [this.ICONS.eye, Utils.fmtCompact(r.subscribers_count ?? r.watchers_count ?? 0), 'watching', `${base}/watchers`, 'View watchers on GitHub'],
+      [this.ICONS.issue, Utils.fmtCompact(data.counts.issuesOpen + data.counts.prsOpen), 'open items', `${base}/issues`, 'View open issues on GitHub'],
+      [this.ICONS.scale, Utils.esc(r.license?.spdx_id || 'NOASSERTION'), 'license', `${base}/blob/${branch}/LICENSE`, 'View the license on GitHub'],
+      [this.ICONS.clock, Utils.timeAgo(r.pushed_at), 'last push', `${base}/commits/${branch}`, 'View recent commits on GitHub'],
+    ];
+    el.innerHTML = chips.map(([ico, val, label, href, aria]) =>
+      `<a class="chip" href="${href}" target="_blank" rel="noopener" aria-label="${aria}">${ico}<strong>${val}</strong>${label}</a>`).join('');
+  },
+
+  /**
+   * Render the six KPI cards. Values carry data-* attributes consumed by the
+   * count-up animator in Reveal.
+   * @param {object} data
+   */
+  renderKpis(data) {
+    const el = Utils.$('#kpi-grid');
+    if (!el) return;
+    const commitsTotal = data.contributors.reduce((a, c) => a + (c.contributions || 0), 0)
+      || data.weekly.reduce((a, b) => a + b, 0);
+    const thisWeek = data.weekly[data.weekly.length - 1] || 0;
+    const prTotal = data.counts.prsOpen + data.counts.prsClosed;
+    const isTotal = data.counts.issuesOpen + data.counts.issuesClosed;
+    const bytes = Object.values(data.languages).reduce((a, b) => a + b, 0);
+    const ageDays = Math.max(1, Math.floor((Date.now() - new Date(data.repo.created_at)) / 864e5));
+    const lead = data.contributors[0]?.login || '—';
+
+    const cards = [
+      { ico: this.ICONS.commit, label: 'Commits', target: commitsTotal, fmt: 'int', delta: data.activityAvailable === false ? 'this week unavailable' : `<span class="up">+${Utils.fmtInt(thisWeek)}</span> this week` },
+      { ico: this.ICONS.pr, label: 'Pull Requests', target: prTotal, fmt: 'int', delta: `<span class="accent">${data.counts.prsOpen} open</span> · ${data.counts.prsClosed} closed` },
+      { ico: this.ICONS.issue, label: 'Issues', target: isTotal, fmt: 'int', delta: `<span class="accent">${data.counts.issuesOpen} open</span> · ${data.counts.issuesClosed} closed` },
+      { ico: this.ICONS.users, label: 'Contributors', target: data.contributors.length, fmt: 'int', delta: `lead: <span class="accent">@${Utils.esc(lead)}</span>` },
+      { ico: this.ICONS.code, label: 'Source Volume', target: bytes, fmt: 'bytes', delta: `${Object.keys(data.languages).length} languages tracked` },
+      { ico: this.ICONS.calendar, label: 'Repo Age', target: ageDays, fmt: 'int', delta: `since ${Utils.fmtMonthYear(new Date(data.repo.created_at))}` },
+    ];
+
+    el.innerHTML = cards.map((c) => `
+      <article class="panel kpi">
+        <span class="kpi-label">${c.ico}${c.label}</span>
+        <div class="kpi-value" data-target="${c.target}" data-format="${c.fmt}">0</div>
+        <div class="kpi-delta">${c.delta}</div>
+      </article>`).join('');
+  },
+
+  /**
+   * Render the scrolling commit ticker. Content is duplicated once so the
+   * CSS translateX(-50%) animation loops seamlessly.
+   * @param {Array<{sha:string,msg:string,date:string,url:string}>} commits
+   */
+  renderTicker(commits) {
+    const el = Utils.$('#ticker-track');
+    if (!el) return;
+    const items = commits.map((c) =>
+      `<a class="ticker-item" href="${Utils.esc(c.url)}" target="_blank" rel="noopener">` +
+      `<span class="sha">${Utils.esc(c.sha)}</span>${Utils.esc(c.msg)}<span class="ago">${Utils.timeAgo(c.date)}</span></a>`,
+    );
+    const sep = '<span class="ticker-sep" aria-hidden="true">◆</span>';
+    const group = items.join(sep) + sep;
+    el.innerHTML = commits.length ? group + group : '<span class="ticker-item">— commit feed unavailable —</span>'; // seamless loop
+  },
+
+  /**
+   * Render branch topology cards.
+   * @param {object} data
+   */
+  renderBranches(data) {
+    const el = Utils.$('#branches-list');
+    if (!el) return;
+    const base = `https://github.com/${CONFIG.owner}/${CONFIG.repo}`;
+    el.innerHTML = data.branches.map((b) => {
+      const login = typeof b.author?.login === 'string' && /^[a-z\d][a-z\d-]{0,38}(?:\[bot\])?$/i.test(b.author.login) ? b.author.login : '';
+      const initials = Utils.esc(login.slice(0, 2).toUpperCase());
+      const avatarURL = typeof b.author?.avatar_url === 'string' && b.author.avatar_url.startsWith('https://avatars.githubusercontent.com/')
+        ? b.author.avatar_url : '';
+      const fallback = `<span class="contrib-avatar branch-avatar contrib-avatar-fallback" aria-hidden="true">${initials}</span>`;
+      const avatar = login ? `<a class="branch-author" href="https://github.com/${encodeURIComponent(login)}" target="_blank" rel="noopener" aria-label="Open commit author @${Utils.esc(login)} on GitHub" title="Commit author @${Utils.esc(login)}">${avatarURL ? `<img class="contrib-avatar branch-avatar" src="${Utils.esc(avatarURL)}" alt="" width="20" height="20" loading="lazy" data-initials="${initials}" />` : fallback}</a>` : '';
+      const state = ['success', 'pending', 'failure', 'neutral', 'none'].includes(b.checks?.state) ? b.checks.state : 'unavailable';
+      const labels = { success: 'checks passed', pending: 'checks pending', failure: 'checks failed', neutral: 'checks cancelled or stale', none: 'no checks', unavailable: 'view HEAD checks on GitHub' };
+      const icons = { success: 'check', pending: 'clock', failure: 'close', neutral: 'close', none: 'issue', unavailable: 'issue' };
+      const count = state !== 'unavailable' && b.checks.total ? `${b.checks.passed}/${b.checks.total}` : '—';
+      const description = `${b.name}: ${labels[state]}${state !== 'unavailable' && b.checks.total ? `; ${b.checks.passed} of ${b.checks.total} successful, neutral or skipped` : ''}`;
+      return `
+      <article class="panel branch-card">
+        <div class="branch-head">
+          ${this.ICONS.branch}
+          <span class="branch-name">${Utils.esc(b.name)}</span>
+          <span class="branch-tags">
+            ${b.isDefault ? '<span class="tag tag-default">default</span>' : ''}
+            ${b.protected ? '<span class="tag tag-protected">protected</span>' : ''}
+          </span>
+        </div>
+        <a class="branch-sha" href="${base}/commit/${Utils.esc(b.sha)}" target="_blank" rel="noopener" title="View HEAD commit">${Utils.esc(b.sha.slice(0, 7))}</a>
+        <p class="branch-meta">
+          <span class="branch-history">
+            <a class="branch-tree" href="${base}/tree/${Utils.esc(b.name)}" target="_blank" rel="noopener">browse tree</a>
+            ${b.committedAt ? `<span class="branch-commit"><span aria-hidden="true">·</span> ${avatar}<time datetime="${Utils.esc(b.committedAt)}">committed ${Utils.timeAgo(b.committedAt)}</time></span>` : ''}
+          </span>
+          ${b.sha ? `<a class="branch-checks" data-state="${state}" href="${base}/commit/${encodeURIComponent(b.sha)}/checks" target="_blank" rel="noopener" aria-label="${Utils.esc(description)}" title="${Utils.esc(description)}">${this.ICONS[icons[state]]}${Utils.esc(count)}</a>` : ''}
+        </p>
+      </article>`;
+    }).join('') || '<p class="empty-note">// no branch data</p>';
+    el.querySelectorAll('.branch-author img').forEach((image) => image.addEventListener('error', () => {
+      const fallback = document.createElement('span');
+      fallback.className = 'contrib-avatar branch-avatar contrib-avatar-fallback';
+      fallback.setAttribute('aria-hidden', 'true');
+      fallback.textContent = image.dataset.initials;
+      image.replaceWith(fallback);
+    }, { once: true }));
+  },
+
+  /** Enhance release code without changing its literal text or whitespace. */
+  prepareReleaseCode(root) {
+    root.querySelectorAll('.md-body pre').forEach((pre) => {
+      const code = pre.querySelector('code');
+      if (!code || pre.closest('.release-code')) return;
+      const block = document.createElement('div');
+      block.className = 'release-code clone-line clone-block';
+      const button = document.createElement('button');
+      button.className = 'clone-copy icon-btn';
+      button.type = 'button';
+      button.setAttribute('aria-label', 'Copy code block');
+      button.disabled = !code.textContent;
+      button.innerHTML = this.ICONS.copy;
+      const status = document.createElement('p');
+      status.className = 'code-copy-status empty-note';
+      status.setAttribute('role', 'status');
+      pre.replaceWith(block);
+      block.append(pre, button);
+      block.after(status);
+    });
+  },
+
+  /** Link plain table filenames only to this release's actual, validated assets. */
+  linkReleaseDownloads(card, release) {
+    const prefix = `/${CONFIG.owner}/${CONFIG.repo}/releases/download/${encodeURIComponent(release.tag)}/`;
+    const assets = new Map();
+    for (const asset of Array.isArray(release.assets) ? release.assets : []) {
+      try {
+        const url = new URL(asset?.url);
+        if (typeof asset?.name !== 'string' || url.protocol !== 'https:' || url.hostname !== 'github.com'
+            || url.username || url.password || !url.pathname.startsWith(prefix)
+            || decodeURIComponent(url.pathname.slice(prefix.length)) !== asset.name) continue;
+        assets.set(asset.name, url.href);
+      } catch { /* Invalid metadata must not hide otherwise readable release notes. */ }
+    }
+    card.querySelectorAll('.md-body table td:first-child code').forEach((code) => {
+      const url = assets.get(code.textContent);
+      if (!url || code.closest('a')) return;
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      code.replaceWith(link);
+      link.append(code);
+    });
+  },
+
+  /** Render escaped release notes; the latest card starts expanded. */
+  renderReleases(data) {
+    const el = Utils.$('#releases-list');
+    if (!el) return;
+    const note = Utils.$('#releases-note');
+    if (note) {
+      note.textContent = data.releasesSynthetic
+        ? 'Release feed unavailable. No release records have been invented.'
+        : (data.releases.length ? 'Streamed live from the GitHub Releases feed.' : 'No GitHub releases published yet.');
+    }
+    const chevron = this.ICONS.chevron;
+    const entries = data.releases.map((release) => ({ release, ...Markdown.splitRelease(release.body) }));
+    el.innerHTML = entries.map(({ release: r, notes, changelog }, i) => `
+      <div class="release-item">
+        <article class="panel release-card${r.latest ? ' expanded' : ''}">
+          <div class="release-head">
+            <a class="release-tag" href="${Utils.esc(r.url)}" target="_blank" rel="noopener">${Utils.esc(r.tag)}</a>
+            <span class="release-title">${Utils.esc(r.name)}</span>
+            ${r.latest || changelog ? `<span class="release-badges">${r.latest ? '<span class="badge-latest">LATEST</span>' : ''}
+            ${changelog ? `<button class="tag release-changelog" type="button" aria-haspopup="dialog" aria-controls="release-changelog-modal" aria-label="Read changelog for ${Utils.esc(r.tag)}">Changelog</button>` : ''}</span>` : ''}
+            ${r.synthetic ? '<span class="tag">projected</span>' : ''}
+            <span class="release-date">${Utils.fmtDate(new Date(r.date))}</span>
+            <button class="release-toggle" type="button" aria-expanded="${r.latest ? 'true' : 'false'}"
+                    aria-controls="release-body-${i}" aria-label="Toggle release notes for ${Utils.esc(r.tag)}">${chevron}</button>
+          </div>
+          <div class="release-body" id="release-body-${i}">
+            <div class="release-body-inner">
+              <div class="md-body">${Markdown.render(notes)}</div>
+            </div>
+          </div>
+        </article>
+      </div>`).join('') || '<p class="empty-note">// no release records available</p>';
+
+    /* Expand/collapse wiring. A click anywhere on the card toggles — except
+       on links (they navigate) and inside the expanded notes body (so text
+       selection never collapses the card). The chevron <button> gives
+       keyboard users the same toggle for free (Enter/Space fire click). */
+    el.querySelectorAll('.release-card').forEach((card, index) => {
+      this.linkReleaseDownloads(card, data.releases[index]);
+      this.prepareReleaseCode(card);
+      const toggle = card.querySelector('.release-toggle');
+      card.addEventListener('click', (ev) => {
+        if (ev.target.closest('.release-changelog')) {
+          ReleaseModal.open(entries[index].release, entries[index].changelog);
+          return;
+        }
+        if (ev.target.closest('a') || ev.target.closest('.release-body')) return;
+        const open = card.classList.toggle('expanded');
+        toggle?.setAttribute('aria-expanded', String(open));
+      });
+    });
+  },
+
+  /**
+   * Render one tracker terminal window (issues or pull requests) as an
+   * Open/Closed tabbed queue — the same tab language as the module popup
+   * docs (.pkg-tabs/.pkg-tab). Tabs carry the exact search-API counters;
+   * the list below shows the rows for the active state. The window
+   * defaults to the Open tab unless the open queue is empty, in which
+   * case Closed is preselected. Rows are buttons: activating one opens
+   * ItemModal with the full record.
+   * @param {'issue'|'pr'} kind
+   * @param {{open: Array<object>, closed: Array<object>}} bucket - Rows by state.
+   * @param {object} counts - Exact counters (data.counts).
+   */
+  renderTracker(kind, bucket, counts, unavailable = []) {
+    const pfx = kind === 'pr' ? 'prs' : 'issues';
+    const listEl = Utils.$(`#${pfx}-list`);
+    const badgeEl = Utils.$(`#${pfx}-count-badge`);
+    const tabsEl = Utils.$(`#${pfx}-tabs`);
+    if (!listEl) return;
+
+    const openN = kind === 'pr' ? counts.prsOpen : counts.issuesOpen;
+    const closedN = kind === 'pr' ? counts.prsClosed : counts.issuesClosed;
+    if (badgeEl) badgeEl.textContent = `${openN} OPEN`;
+
+    /* Exact counters on the tabs themselves. */
+    if (tabsEl) {
+      [ ['open', openN], ['closed', closedN] ].forEach(([state, n]) => {
+        const el = tabsEl.querySelector(`[data-state="${state}"] .tracker-tab-n`);
+        if (el) el.textContent = Utils.fmtInt(n);
+      });
+    }
+
+    /* Per-window tab state; default Open unless the open queue is empty. */
+    this._tracker = this._tracker || {};
+    this._tracker[kind] = {
+      bucket, unavailable,
+      state: bucket.open.length ? 'open' : 'closed',
+      listEl, tabsEl,
+    };
+
+    /* Wire tab clicks + arrow-key navigation once per window. */
+    if (tabsEl && !tabsEl.dataset.wired) {
+      tabsEl.dataset.wired = '1';
+      tabsEl.addEventListener('click', (ev) => {
+        const tab = ev.target.closest('.tracker-tab');
+        if (tab) this._setTrackerTab(kind, tab.dataset.state);
+      });
+      tabsEl.addEventListener('keydown', (ev) => {
+        if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+        const tabs = [...tabsEl.querySelectorAll('.tracker-tab')];
+        const i = tabs.indexOf(document.activeElement);
+        if (!tabs.length || i === -1) return;
+        ev.preventDefault();
+        const next = tabs[(i + (ev.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        this._setTrackerTab(kind, next.dataset.state);
+      });
+    }
+
+    /* Row → ItemModal wiring, delegated once per list. */
+    if (!listEl.dataset.wired) {
+      listEl.dataset.wired = '1';
+      listEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.term-open');
+        if (!btn) return;
+        const row = this._findTrackerRow(kind, Number(btn.dataset.num));
+        if (row) ItemModal.open(row, kind);
+      });
+    }
+
+    this._setTrackerTab(kind, this._tracker[kind].state);
+  },
+
+  /**
+   * Switch a tracker window's active state tab and re-render its rows.
+   * @param {'issue'|'pr'} kind
+   * @param {'open'|'closed'} state
+   */
+  _setTrackerTab(kind, state) {
+    const t = this._tracker?.[kind];
+    if (!t) return;
+    t.state = state;
+    if (t.tabsEl) {
+      t.tabsEl.querySelectorAll('.tracker-tab').forEach((tab) => {
+        const on = tab.dataset.state === state;
+        tab.classList.toggle('active', on);
+        tab.setAttribute('aria-selected', String(on));
+      });
+    }
+    const rows = t.bucket[state] || [];
+    if (!rows.length) {
+      if (t.unavailable.includes(state)) {
+        t.listEl.innerHTML = '<li class="empty-note">// record feed unavailable — check the repository on GitHub</li>';
+        return;
+      }
+      const noun = kind === 'pr' ? 'pull requests' : 'issues';
+      t.listEl.innerHTML = `<li class="empty-note">// ${state === 'open'
+        ? `queue clear — zero open ${noun}`
+        : `no closed ${noun} on record`}</li>`;
+      return;
+    }
+    t.listEl.innerHTML = rows.map((r) => this._trackerRowHtml(r, kind)).join('');
+  },
+
+  /**
+   * Build one tracker row — a button that opens ItemModal on activation.
+   * @param {object} r - Normalized row (API.normalizeRow).
+   * @param {'issue'|'pr'} kind
+   * @returns {string}
+   */
+  _trackerRowHtml(r, kind) {
+    const stClass = r.merged ? 'st-merged' : (r.state === 'open' ? 'st-open' : 'st-closed');
+    const stTitle = r.merged ? 'merged' : r.state;
+    const labels = r.labels.slice(0, 4).map((l) => {
+      const bg = `#${l.color}`;
+      return `<span class="lbl" style="background:${Utils.rgba(bg, 0.16)};color:${bg};border-color:${Utils.rgba(bg, 0.4)}">${Utils.esc(l.name)}</span>`;
+    }).join('');
+    return `
+      <li class="term-row">
+        <button type="button" class="term-open" data-num="${r.number}" aria-haspopup="dialog"
+                aria-label="Open ${kind === 'pr' ? 'pull request' : 'issue'} #${r.number}: ${Utils.esc(r.title)}">
+          <span class="st ${stClass}" title="${stTitle}">${{ 'st-open': this.ICONS.issue, 'st-closed': this.ICONS.closed, 'st-merged': this.ICONS.merged }[stClass]}</span>
+          <span class="num">#${r.number}</span>
+          <span class="t-title">${Utils.esc(r.title)}</span>
+          <span class="t-meta">${labels}<span>@${Utils.esc(r.user)}</span><span>·</span><span>${Utils.timeAgo(r.updatedAt)}</span></span>
+        </button>
+      </li>`;
+  },
+
+  /**
+   * Find a tracker row by number across both state buckets of a window.
+   * @param {'issue'|'pr'} kind
+   * @param {number} num
+   * @returns {object|null}
+   */
+  _findTrackerRow(kind, num) {
+    const tracker = this._tracker?.[kind];
+    const b = tracker?.bucket;
+    if (!b) return null;
+    const states = tracker.state === 'closed' ? ['closed', 'open'] : ['open', 'closed'];
+    return states.flatMap((state) => b[state] || []).find((r) => r.number === num) || null;
+  },
+
+  /**
+   * Render contributor cards with contribution bars.
+   * @param {object} data
+   */
+  renderContributors(data) {
+    const el = Utils.$('#contributors-list');
+    if (!el) return;
+    const max = Math.max(1, ...data.contributors.map((c) => c.contributions || 0));
+    el.innerHTML = data.contributors.map((c) => {
+      const pct = Math.max(3, Math.round(((c.contributions || 0) / max) * 100));
+      return `
+      <article class="panel contrib-card" data-contrib="${Utils.esc(c.login)}" tabindex="0" role="button"
+               aria-haspopup="dialog" aria-label="Open the contributor profile for @${Utils.esc(c.login)}">
+        <div class="contrib-top">
+          <img class="contrib-avatar" src="${Utils.esc(c.avatar_url)}" alt="${Utils.esc(c.login)} avatar" loading="lazy" />
+          <div>
+            <a class="contrib-login" href="${Utils.esc(c.html_url)}" target="_blank" rel="noopener">@${Utils.esc(c.login)}</a>
+            <div class="contrib-role">maintainer</div>
+          </div>
+        </div>
+        <div class="contrib-bar"><i style="width:${pct}%"></i></div>
+        <div class="contrib-count"><strong>${Utils.fmtInt(c.contributions || 0)}</strong> commits on default branch</div>
+        <span class="pkg-cta">profile ${this.ICONS.profile}</span>
+      </article>`;
+    }).join('');
+
+    /* Card → ContribModal wiring: click anywhere on the card (except the
+       profile link), or Enter/Space for keyboard users. */
+    el.querySelectorAll('.contrib-card[data-contrib]').forEach((card) => {
+      card.querySelector('img')?.addEventListener('error', (event) => {
+        const fallback = document.createElement('span');
+        fallback.className = 'contrib-avatar contrib-avatar-fallback';
+        fallback.textContent = card.dataset.contrib.slice(0, 2).toUpperCase();
+        event.target.replaceWith(fallback);
+      });
+      const open = () => ContribModal.open(card.dataset.contrib);
+      card.addEventListener('click', (ev) => {
+        if (ev.target.closest('a')) return;
+        open();
+      });
+      card.addEventListener('keydown', (ev) => {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault();
+        open();
+      });
+    });
+  },
+
+  /** Fill the activity chart's meta row (total / average / peak). */
+  renderActivityMeta(data) {
+    if (data.activityAvailable === false) {
+      ['#activity-total', '#activity-avg', '#activity-peak'].forEach((id) => {
+        const el = Utils.$(id); if (el) el.textContent = '—';
+      });
+      return;
+    }
+    const total = data.weekly.reduce((a, b) => a + b, 0);
+    const peak = Math.max(...data.weekly);
+    const set = (id, html) => { const n = Utils.$(id); if (n) n.innerHTML = html; };
+    set('#activity-total', Utils.fmtInt(total));
+    set('#activity-avg', `${Utils.fmtInt(Math.round(total / data.weekly.length))}<em> /wk</em>`);
+    set('#activity-peak', `${Utils.fmtInt(peak)}<em> /wk</em>`);
+  },
+
+  /** Fill gauge captions with exact counters. */
+  renderGaugeCaptions(data) {
+    const c = data.counts;
+    const i = Utils.$('#gauge-issues-cap');
+    if (i) i.innerHTML = `<strong>${Utils.fmtInt(c.issuesClosed)}</strong> of <strong>${Utils.fmtInt(c.issuesOpen + c.issuesClosed)}</strong> issues closed`;
+    const p = Utils.$('#gauge-prs-cap');
+    if (p) p.innerHTML = `<strong>${Utils.fmtInt(c.prsClosed)}</strong> of <strong>${Utils.fmtInt(c.prsOpen + c.prsClosed)}</strong> pull requests closed`;
+  },
+
+  /**
+   * Update the nav feed badge to reflect the data mode.
+   * @param {'live'|'sim'} mode
+   */
+  setFeedBadge(mode) {
+    const badge = Utils.$('#feed-badge');
+    const txt = Utils.$('#feed-badge-text');
+    if (!badge || !txt) return;
+    if (mode === 'live') {
+      badge.classList.remove('badge-sim');
+      badge.title = 'Streaming live from the GitHub REST API';
+      txt.textContent = 'LIVE';
+    } else {
+      badge.classList.add('badge-sim');
+      badge.title = 'GitHub API unavailable — showing the dated repository snapshot; missing feeds stay empty';
+      txt.textContent = 'SNAPSHOT';
+    }
+  },
+
+  /** Session identifier for the hero HUD corner. */
+  renderHud() {
+    const el = Utils.$('#hud-session');
+    if (el) el.textContent = `0x${Math.floor(Math.random() * 0xffffff).toString(16).toUpperCase().padStart(6, '0')}`;
+  },
+
+  /**
+   * Copy-to-clipboard for every install-command button (.clone-copy beside
+   * a <code>). Delegated on document so it also covers buttons rendered
+   * later (e.g. the dynamically mounted package cards).
+   */
+  bindCloneCopy() {
+    document.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest?.('.clone-copy');
+      if (!btn) return;
+      /* Commands exclude prompts; code blocks retain every displayed byte. */
+      const block = btn.closest('.release-code');
+      const codes = btn.parentElement?.querySelectorAll('code');
+      const text = block ? block.querySelector('code').textContent : codes && codes.length
+        ? [...codes].map((code) => code.textContent.trim()).filter(Boolean).join('\n') : '';
+      if (!text) return;
+      const status = block?.nextElementSibling?.matches('.code-copy-status')
+        ? block.nextElementSibling : Utils.$('#copy-status');
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        let copied = false;
+        try { ta.select(); copied = document.execCommand('copy'); }
+        catch { /* The legacy clipboard API can also be unavailable. */ }
+        finally { ta.remove(); btn.focus(); }
+        if (!copied) {
+          if (status) status.textContent = `Copy failed — select and copy the ${block ? 'code block' : 'command'} manually.`;
+          return;
+        }
+      }
+      if (status) status.textContent = block ? 'Code block copied.' : 'Source clone command copied.';
+      const prev = btn.innerHTML;
+      btn.innerHTML = UI.ICONS.check;
+      setTimeout(() => { btn.innerHTML = prev; }, 1200);
+    });
+  },
+
+  /** Update the footer's LAST SYNC line. */
+  renderFooterSync() {
+    const el = Utils.$('#footer-sync');
+    if (el) el.textContent = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' });
+  },
+
+  /**
+   * Master render pass — called once DATA is available.
+   * @param {object} data
+   */
+  renderAll(data) {
+    const note = Utils.$('#data-note');
+    if (note) note.textContent = data.mode !== 'live'
+      ? `GitHub is unavailable. Repository counters use the snapshot from ${SNAPSHOT.fetchedAt.slice(0, 10)}; record feeds are unavailable, not empty or simulated.`
+      : (data.missingFeeds?.length ? 'Some feeds are unavailable. Counters may use the dated snapshot; missing records are not simulated.' : 'Metadata is live. Weekly statistics may take time to become available.');
+    this.renderChips(data);
+    this.renderKpis(data);
+    this.renderTicker(data.ticker);
+    this.renderBranches(data);
+    Roadmap.render(data);
+    this.renderReleases(data);
+    const unavailable = (prefix) => ['open', 'closed'].filter((state) => data.mode !== 'live'
+      || data.missingFeeds?.includes(prefix + state[0].toUpperCase() + state.slice(1)));
+    this.renderTracker('issue', data.issues, data.counts, unavailable('issues'));
+    this.renderTracker('pr', data.pulls, data.counts, unavailable('pulls'));
+    this.renderContributors(data);
+    this.renderActivityMeta(data);
+    this.renderGaugeCaptions(data);
+    this.setFeedBadge(data.mode);
+    this.renderFooterSync();
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * Roadmap — public milestone quest log and read-only project views.
+ * ------------------------------------------------------------------------- */
+const Roadmap = {
+  render(data) {
+    const root = Utils.$('#roadmap-content');
+    if (!root) return;
+    const milestones = data.milestones;
+    const active = data.project?.columns.find(column => column.name === 'In Progress');
+    const current = active && milestones ? milestones.filter(m => m.state === 'open' && data.project.items.some(item => item.milestone === m.number && item.status === active.id)) : [];
+    root.innerHTML = `
+      <div class="roadmap-controls">
+        <div class="pkg-tabs roadmap-tabs" role="tablist" aria-label="Roadmap views">
+          <button class="pkg-tab" type="button" role="tab" id="kanban-tab" aria-controls="kanban-view" aria-selected="false" tabindex="-1" data-view="kanban">Kanban</button>
+          <button class="pkg-tab active" type="button" role="tab" id="milestones-tab" aria-controls="milestones-view" aria-selected="true" data-view="milestones">Milestones</button>
+        </div>
+        ${current.length ? `<span class="roadmap-current">In progress <strong>${current.map(m => this.markerLabel(m).code).join(', ')}</strong></span>` : ''}
+        <a class="pkg-cta" href="https://github.com/orgs/${CONFIG.owner}/projects/${CONFIG.roadmapProject}" target="_blank" rel="noopener">View project ${UI.ICONS.external}</a>
+      </div>
+      <div class="roadmap-view" id="milestones-view" role="tabpanel" aria-labelledby="milestones-tab"></div>
+      <div class="roadmap-view" id="kanban-view" role="tabpanel" aria-labelledby="kanban-tab" hidden></div>`;
+    this.renderMilestones(root.querySelector('#milestones-view'), milestones, current);
+    this.renderBoard(root, data);
+    root.querySelectorAll('[data-view]').forEach((tab) => tab.addEventListener('click', () => this.selectView(root, tab.dataset.view)));
+    root.querySelector('.roadmap-tabs').addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const tabs = [...root.querySelectorAll('[data-view]')];
+      const index = tabs.indexOf(event.target);
+      if (index === -1) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs.at(-1)
+        : tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      this.selectView(root, next.dataset.view);
+      next.focus();
+    });
+  },
+
+  markerLabel(milestone) {
+    const match = /^([CM]\d+)\s+[—–-]\s+(.+)$/.exec(milestone.title.trim());
+    return match ? { code: match[1], title: match[2] } : { code: `#${milestone.number}`, title: milestone.title };
+  },
+
+  wrapTitle(title) {
+    return Utils.esc(title).replace(/\/(?=\S)/g, '/<wbr>');
+  },
+
+  renderMilestones(pane, milestones, current) {
+    if (!milestones?.length) {
+      pane.innerHTML = `<p class="empty-note">${milestones == null ? '// milestone feed unavailable — view milestones on GitHub' : '// no GitHub milestones published'}</p>`;
+      return;
+    }
+    const ordered = milestones.toSorted((a, b) => a.number - b.number);
+    pane.innerHTML = `<div class="milestone-carousel">
+      <button class="milestone-arrow milestone-prev" type="button" aria-label="Previous milestone">${UI.ICONS.chevron}</button>
+      <div class="milestone-rail"><div class="milestone-track" role="tablist" aria-label="Repository milestones">
+        ${ordered.map((milestone) => {
+          const { code, title } = this.markerLabel(milestone);
+          return `<button class="milestone-marker" id="milestone-marker-${milestone.number}" type="button" role="tab" aria-controls="milestone-detail" aria-selected="false" tabindex="-1" aria-label="${code} — ${Utils.esc(title)}${current.includes(milestone) ? ', in progress' : ''}">
+            <span class="milestone-label"><strong>${code}</strong><span>${this.wrapTitle(title)}</span></span>
+            <span class="milestone-node" aria-hidden="true"></span>
+            ${current.includes(milestone) ? `<span class="milestone-beacon" aria-hidden="true">${UI.ICONS.profile} In progress</span>` : ''}
+          </button>`;
+        }).join('')}
+      </div></div>
+      <button class="milestone-arrow milestone-next" type="button" aria-label="Next milestone">${UI.ICONS.chevron}</button>
+    </div>
+    <div id="milestone-detail" role="tabpanel" tabindex="0"></div>`;
+    const detail = pane.querySelector('#milestone-detail');
+    const markers = [...pane.querySelectorAll('.milestone-marker')];
+    const previous = pane.querySelector('.milestone-prev');
+    const next = pane.querySelector('.milestone-next');
+    const rail = pane.querySelector('.milestone-rail');
+    let selected = -1;
+    const select = (index, focus = false) => {
+      const prior = markers[selected];
+      const marker = markers[index];
+      if (index !== selected) {
+        if (prior) {
+          prior.tabIndex = -1;
+          prior.setAttribute('aria-selected', 'false');
+        }
+        selected = index;
+        marker.tabIndex = 0;
+        marker.setAttribute('aria-selected', 'true');
+        detail.setAttribute('aria-labelledby', marker.id);
+        this.renderMilestoneCard(detail, ordered[index]);
+      } else {
+        detail.querySelector('details').open = true;
+      }
+      const focused = document.activeElement;
+      previous.disabled = index === 0;
+      next.disabled = index === markers.length - 1;
+      if (focus || (focused === previous && previous.disabled) || (focused === next && next.disabled)) marker.focus({ preventScroll: true });
+      rail.scrollTo?.({ left: marker.offsetLeft + (marker.offsetWidth - rail.clientWidth) / 2,
+        behavior: !prior || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    };
+    markers.forEach((marker, index) => marker.addEventListener('click', () => select(index)));
+    rail.addEventListener('keydown', (event) => {
+      if (event.target !== markers[selected] || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      select(event.key === 'Home' ? 0 : event.key === 'End' ? markers.length - 1
+        : Math.max(0, Math.min(markers.length - 1, selected + (event.key === 'ArrowRight' ? 1 : -1))), true);
+    });
+    previous.addEventListener('click', () => select(selected - 1));
+    next.addEventListener('click', () => select(selected + 1));
+    select(Math.max(0, ordered.indexOf(current[0])));
+  },
+
+  renderMilestoneCard(pane, milestone) {
+    const total = milestone.open + milestone.closed;
+    const description = (milestone.description || '').trim()
+      .replace(/^[CM]\d+\s*[-–—]\s+/, '')
+      .replace(/(?:^|\s+)Source:\s*https:\/\/github\.com\/\S+\s*$/i, '');
+    pane.innerHTML = `<article class="panel milestone-card" data-milestone="${milestone.number}">
+      <div class="milestone-heading">${milestone.state === 'closed' ? UI.ICONS.closed : UI.ICONS.issue}
+        <h3><a href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/milestone/${milestone.number}" target="_blank" rel="noopener">${this.wrapTitle(milestone.title)}</a></h3>
+        <span class="tag">${milestone.state === 'closed' ? 'Closed' : 'Open'}</span>
+      </div>
+      <div class="milestone-progress-label"><span>${total ? `${milestone.closed} of ${total} items closed` : 'No tracked items'}</span>${total ? `<span>${Math.round(milestone.closed / total * 100)}%</span>` : ''}</div>
+      <progress value="${milestone.closed}" max="${Math.max(1, total)}" aria-label="${Utils.esc(milestone.title)}: ${milestone.closed} of ${total} items closed"></progress>
+      <details class="milestone-objectives" open><summary>Objectives ${UI.ICONS.chevron}</summary>
+        ${description ? `<p class="milestone-description">${Utils.esc(description)}</p>` : ''}
+        <div class="milestone-items" aria-live="polite"></div>
+      </details>
+    </article>`;
+    const details = pane.querySelector('details');
+    details.addEventListener('toggle', () => { this.loadObjectives(details, milestone); });
+  },
+
+  selectView(root, view) {
+    if (!['milestones', 'kanban'].includes(view)) return;
+    const current = root.querySelector('.roadmap-current');
+    if (current) current.hidden = view !== 'milestones';
+    root.querySelectorAll('[data-view]').forEach((tab) => {
+      const selected = tab.dataset.view === view;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      root.querySelector(`#${tab.getAttribute('aria-controls')}`).hidden = !selected;
+    });
+  },
+
+  renderBoard(root, data) {
+    const pane = root.querySelector('#kanban-view');
+    const project = data.project;
+    if (!project) { pane.innerHTML = '<p class="empty-note">// project board unavailable — view the public project on GitHub</p>'; return; }
+    const options = new Map((data.milestones || []).map((milestone) => [milestone.number, milestone.title]));
+    for (const item of project.items) {
+      if (item.milestone !== null && !options.has(item.milestone)) options.set(item.milestone, `Milestone #${item.milestone}`);
+    }
+    pane.innerHTML = `<label class="roadmap-filter-label" for="roadmap-filter">Filter by milestone</label>
+      <select class="roadmap-filter" id="roadmap-filter"><option value="">All milestones</option>
+        ${[...options].map(([number, title]) => `<option value="${number}">${Utils.esc(title)}</option>`).join('')}
+        ${project.items.some((item) => item.milestone === null) ? '<option value="none">No milestone</option>' : ''}
+      </select><div class="kanban-grid"></div>`;
+    const filter = pane.querySelector('select');
+    const update = () => this.renderColumns(pane.querySelector('.kanban-grid'), project, filter.value);
+    filter.addEventListener('change', update);
+    update();
+  },
+
+  renderColumns(grid, project, filter) {
+    const items = project.items.filter((item) => !filter || (filter === 'none' ? item.milestone === null : item.milestone === Number(filter)));
+    const known = new Set(project.columns.map((column) => column.id));
+    const columns = project.columns.map((column) => ({ name: column.name, items: items.filter((item) => item.status === column.id) }));
+    const unassigned = items.filter((item) => item.status === null);
+    const unknown = items.filter((item) => item.status !== null && !known.has(item.status));
+    if (unassigned.length) columns.push({ name: 'No status', items: unassigned });
+    if (unknown.length) columns.push({ name: 'Status unavailable', items: unknown });
+    grid.innerHTML = columns.length ? columns.map((column, index) => `<section class="kanban-column" aria-labelledby="kanban-heading-${index}">
+      <h3 id="kanban-heading-${index}">${Utils.esc(column.name)} <span class="kanban-count">${column.items.length}</span></h3>
+      ${column.items.length ? `<ul class="kanban-items">${column.items.map((item) => `<li><a class="kanban-card" href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/${item.kind === 'pr' ? 'pull' : 'issues'}/${item.number}" target="_blank" rel="noopener">
+        <span class="kanban-item-meta">${item.kind === 'pr' ? 'PR' : 'Issue'} #${item.number} · ${item.state === 'closed' ? 'Closed' : 'Open'}</span><span class="kanban-item-title">${Utils.esc(item.title)}</span>
+      </a></li>`).join('')}</ul>` : '<p class="empty-note">No items</p>'}
+    </section>`).join('') : '<p class="empty-note">// no project status columns configured</p>';
+  },
+
+  async loadObjectives(details, milestone) {
+    if (!details.isConnected || !details.open || details.dataset.loaded || details.dataset.loading) return;
+    details.dataset.loading = 'true';
+    const list = details.querySelector('.milestone-items');
+    list.innerHTML = '<p class="empty-note">// loading milestone objectives…</p>';
+    try {
+      const rows = await API.fetchMilestoneItems(milestone.number);
+      if (!details.isConnected) return;
+      if (!rows.length && milestone.open + milestone.closed > 0) throw new Error('Objective feed disagrees with counters');
+      list.innerHTML = rows.length ? `<ul class="milestone-item-list">${rows.map((row) => {
+        const closed = row.state === 'closed';
+        const rowClass = closed ? ' class="milestone-item-closed"' : '';
+        const icon = closed ? UI.ICONS.check : UI.ICONS.issue;
+        const state = closed ? '<span class="milestone-item-state">CLOSED</span>' : '';
+        return `<li${rowClass}><a href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/${row.kind === 'pr' ? 'pull' : 'issues'}/${row.number}" target="_blank" rel="noopener"${closed ? '' : ' aria-description="Open"'}>
+          ${icon}<span class="milestone-item-number">#${row.number}</span>
+          <span class="milestone-item-title">${Utils.esc(row.title)}</span>
+          ${state}
+        </a></li>`;
+      }).join('')}</ul>` : '<p class="empty-note">// no milestone objectives</p>';
+      details.dataset.loaded = 'true';
+    } catch {
+      if (details.isConnected) list.innerHTML = '<p class="empty-note">// objectives unavailable — reopen to retry or view this milestone on GitHub</p>';
+    } finally { delete details.dataset.loading; }
+  },
+};
+
+function trapDialogFocus(box) {
+  box.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    const controls = [...box.querySelectorAll('button:not([disabled]), a[href], [tabindex="0"]')]
+      .filter((el) => !el.closest('[hidden], .pkg-tabpanel:not(.active)'));
+    const first = controls[0], last = controls.at(-1);
+    if (!first) { event.preventDefault(); box.focus(); return; }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === box)) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
+    }
+  });
+}
+
+const Docs = {
+  /**
+   * Split a README into tab sections at its `##` headings. Content before
+   * the first `##` becomes the "Overview" tab; a leading `#` title is
+   * dropped (the modal header already names the module).
+   * @param {string} md - Markdown source.
+   * @returns {Array<{title:string, body:string[]}>}
+   */
+  _splitSections(md) {
+    const lines = String(md || '').replace(/\r\n?/g, '\n').split('\n');
+    const sections = [];
+    let cur = { title: 'Overview', body: [] };
+    let h1Dropped = false;
+    for (const line of lines) {
+      if (!h1Dropped && /^#\s+/.test(line) && !cur.body.some((l) => l.trim())) {
+        h1Dropped = true;
+        continue;
+      }
+      const h2 = /^##\s+(.+?)\s*$/.exec(line);
+      if (h2) {
+        sections.push(cur);
+        cur = { title: h2[1], body: [] };
+        continue;
+      }
+      cur.body.push(line);
+    }
+    sections.push(cur);
+    return sections.filter((s) => s.body.join('').trim());
+  },
+
+};
+
+/* ----------------------------------------------------------------------------
+ * ItemModal — issue / pull-request details popup for the Tracker section.
+ *
+ * Opened by activating any tracker row. Shows every applicable field of the
+ * record (author, timestamps, labels, milestone, assignees, comment count
+ * and, for pull requests, head/base branches + merge/draft state) and the
+ * body rendered by the Markdown module as a tabbed docs interface — one tab
+ * per `##` section, using the shared terminal dialog chrome and tab classes.
+ * ------------------------------------------------------------------------- */
+const ItemModal = {
+  el: null,        // overlay element (#item-modal)
+  box: null,       // dialog element (.pkg-modal)
+  _open: false,
+  _lastFocus: null,
+
+  /** Capture the overlay and wire dismissal + tab interactions. */
+  init() {
+    this.el = Utils.$('#item-modal');
+    if (!this.el) return;
+    this.box = this.el.querySelector('.pkg-modal');
+    trapDialogFocus(this.box);
+
+    this.el.addEventListener('click', (ev) => {
+      if (ev.target === this.el) { this.close(); return; } // backdrop
+      if (ev.target.closest?.('.term-dot-close')) { this.close(); return; }
+      const tab = ev.target.closest?.('.pkg-tab');
+      if (tab) this._activateTab(tab);
+    });
+
+    document.addEventListener('keydown', (ev) => {
+      if (!this._open) return;
+      if (ev.key === 'Escape') { ev.preventDefault(); this.close(); }
+    });
+
+    /* Arrow-key navigation across the body tablist. */
+    this.el.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+      const tabs = [...this.el.querySelectorAll('.pkg-tab')];
+      const i = tabs.indexOf(document.activeElement);
+      if (!tabs.length || i === -1) return;
+      ev.preventDefault();
+      const next = tabs[(i + (ev.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus();
+      this._activateTab(next);
+    });
+  },
+
+  /**
+   * Open the modal for a normalized tracker row.
+   * @param {object} row - Row from API.normalizeRow.
+   * @param {'issue'|'pr'} kind
+   */
+  open(row, kind) {
+    if (!this.el) return;
+    this._lastFocus = document.activeElement;
+    const isPr = kind === 'pr';
+
+    const ico = isPr ? UI.ICONS.pr : UI.ICONS.issue;
+    const stateTxt = row.merged ? 'MERGED' : row.draft ? 'DRAFT' : String(row.state || '').toUpperCase();
+    const stateCls = row.merged ? 'item-state-merged'
+      : row.draft ? 'item-state-draft'
+      : row.state === 'open' ? 'item-state-open' : 'item-state-closed';
+
+    /* Timestamps — rendered only when the record actually carries them. */
+    const when = (iso) => `${Utils.fmtDate(new Date(iso))} · ${Utils.timeAgo(iso)}`;
+    const authorHtml = `
+      <span class="item-author">
+        ${row.avatar ? `<img class="item-avatar" src="${Utils.esc(row.avatar)}" alt="" loading="lazy">` : ''}
+        ${row.userUrl
+          ? `<a href="${Utils.esc(row.userUrl)}" target="_blank" rel="noopener">@${Utils.esc(row.user)}</a>`
+          : `@${Utils.esc(row.user)}`}
+      </span>`;
+
+    /* Field grid — every applicable record field; absent data adds no row. */
+    const fields = [['AUTHOR', authorHtml]];
+    if (row.createdAt) fields.push(['OPENED', when(row.createdAt)]);
+    if (row.updatedAt) fields.push(['UPDATED', when(row.updatedAt)]);
+    if (row.merged && row.mergedAt) fields.push(['MERGED', when(row.mergedAt)]);
+    else if (row.closedAt) fields.push(['CLOSED', when(row.closedAt)]);
+    if (typeof row.comments === 'number') fields.push(['COMMENTS', Utils.fmtInt(row.comments)]);
+    if (isPr && (row.head || row.base)) {
+      fields.push(['BRANCHES', `<span class="item-refs">${Utils.esc(row.head || '?')} <span class="item-refs-arrow">→</span> ${Utils.esc(row.base || '?')}</span>`]);
+    }
+    if (row.milestone) fields.push(['MILESTONE', Utils.esc(row.milestone)]);
+    if (row.assignees?.length) {
+      fields.push(['ASSIGNEES', row.assignees.map((a) => `@${Utils.esc(a)}`).join(' ')]);
+    }
+    if (row.labels.length) {
+      const chips = row.labels.map((l) => {
+        const bg = `#${l.color}`;
+        return `<span class="lbl" style="background:${Utils.rgba(bg, 0.16)};color:${bg};border-color:${Utils.rgba(bg, 0.4)}">${Utils.esc(l.name)}</span>`;
+      }).join('');
+      fields.push(['LABELS', `<span class="item-labels">${chips}</span>`, true]);
+    }
+
+    this.box.innerHTML = `
+      <div class="term-bar pkg-modal-bar">
+        <button class="term-dot term-dot-close" type="button" aria-label="Close ${isPr ? 'pull request' : 'issue'} details">
+          ${UI.ICONS.close}
+        </button><span class="term-dot"></span><span class="term-dot"></span>
+        <span class="term-title">${isPr ? 'pr' : 'issue'}://${CONFIG.owner}/${CONFIG.repo}#${row.number}</span>
+      </div>
+      <div class="pkg-modal-body">
+        <div class="item-head">
+          <span class="item-state ${stateCls}">${ico}${stateTxt}</span>
+          <h3 class="item-title" id="item-modal-title">${Utils.esc(row.title)} <span class="item-num">#${row.number}</span></h3>
+        </div>
+        <div class="item-fields">
+          ${fields.map(([label, val, fw]) => `
+            <div class="item-field${fw ? ' item-field-fw' : ''}">
+              <span class="f-label">${label}</span>
+              <span class="f-value">${val}</span>
+            </div>`).join('')}
+        </div>
+        <div class="item-actions">
+          <a class="btn" href="${Utils.esc(row.url)}" target="_blank" rel="noopener">
+            View on GitHub
+            ${UI.ICONS.external}
+          </a>
+        </div>
+        <h4 class="pkg-modal-h">${isPr ? 'Pull Request' : 'Issue'} Body <span class="h-sub">// markdown</span></h4>
+        <div class="pkg-modal-docs">${this._docsHtml(row.body)}</div>
+      </div>`;
+
+    /* Show (transition in on the next frame), lock page scroll, focus. */
+    this.el.hidden = false;
+    requestAnimationFrame(() => this.el.classList.add('on'));
+    document.body.classList.add('pkg-modal-open');
+    this._open = true;
+    this.box.querySelector('.term-dot-close')?.focus();
+  },
+
+  /** Dismiss the modal and restore focus to the originating row. */
+  close() {
+    if (!this._open) return;
+    this._open = false;
+    this.el.classList.remove('on');
+    document.body.classList.remove('pkg-modal-open');
+    const done = () => { this.el.hidden = true; };
+    if (Utils.reducedMotion) done(); else setTimeout(done, 300);
+    this._lastFocus?.focus?.();
+  },
+
+  /**
+   * Split a body into tab sections at its `##` headings (reuses the module
+   * popup's parser); the preamble becomes the "Description" tab. Unlike
+   * PkgModal no sections are dropped — issue/PR bodies keep everything.
+   * @param {string} md - Markdown source.
+   * @returns {Array<{title:string, body:string[]}>}
+   */
+  _sections(md) {
+    const sections = Docs._splitSections(md);
+    if (sections.length && sections[0].title === 'Overview') {
+      sections[0] = { ...sections[0], title: 'Description' };
+    }
+    /* Boilerplate guard — a section whose entire content is a "nothing was
+       recorded" note (e.g. an empty ARCHITECT CONDITIONS) earns no tab. */
+    return sections.filter((s) => !/^no architect conditions recorded\.?$/i.test(s.body.join('\n').trim()));
+  },
+
+  /**
+   * Build the body area HTML: a single rendered body when the source has no
+   * usable `##` sections, otherwise a tablist + one tabpanel per section —
+   * the same docs interface as the module popup.
+   * @param {string} md - Markdown source.
+   * @returns {string}
+   */
+  _docsHtml(md) {
+    const sections = this._sections(md);
+    if (!sections.length) return '<p class="empty-note">// no description provided</p>';
+    if (sections.length === 1) {
+      return `<div class="md-body">${Markdown.render(sections[0].body.join('\n'))}</div>`;
+    }
+    const tabs = sections.map((s, i) =>
+      `<button class="pkg-tab${i ? '' : ' active'}" type="button" role="tab" aria-selected="${i === 0}" data-tab="${i}">${Utils.esc(s.title)}</button>`,
+    ).join('');
+    const panels = sections.map((s, i) =>
+      `<div class="pkg-tabpanel${i ? '' : ' active'}" role="tabpanel" data-panel="${i}"><div class="md-body">${Markdown.render(s.body.join('\n'))}</div></div>`,
+    ).join('');
+    return `<div class="pkg-tabs" role="tablist" aria-label="Body sections">${tabs}</div>${panels}`;
+  },
+
+  /**
+   * Switch the active body tab (click or arrow-key driven).
+   * @param {Element} tab - The .pkg-tab button to activate.
+   */
+  _activateTab(tab) {
+    const root = tab.closest('.pkg-modal-docs');
+    if (!root) return;
+    root.querySelectorAll('.pkg-tab').forEach((t) => {
+      const on = t === tab;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', String(on));
+    });
+    root.querySelectorAll('.pkg-tabpanel').forEach((p) => {
+      p.classList.toggle('active', p.dataset.panel === tab.dataset.tab);
+    });
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * ContribModal — contributor "operator profile" popup for the Contributors
+ * section.
+ *
+ * Opened by activating any contributor card. Everything computable from
+ * already-loaded repository data renders instantly (commit count + share of
+ * the tracked default-branch commits, leaderboard rank, issues/PRs authored
+ * inside the tracked tracker windows); the GitHub profile (/users/{login})
+ * and the contributor's recent commits (/commits?author=) then hydrate
+ * lazily through the shared API cache, so a rate-limited or offline session
+ * still shows a complete local profile. Shares the module popup's overlay
+ * chrome (.pkg-modal-overlay / .pkg-modal) and the item popup's field grid.
+ * ------------------------------------------------------------------------- */
+const ContribModal = {
+  el: null,        // overlay element (#contrib-modal)
+  box: null,       // dialog element (.pkg-modal)
+  _open: false,
+  _req: 0,         // monotonic token — stale lazy fills are discarded
+  _lastFocus: null,
+
+  /** Capture the overlay and wire dismissal. */
+  init() {
+    this.el = Utils.$('#contrib-modal');
+    if (!this.el) return;
+    this.box = this.el.querySelector('.pkg-modal');
+    trapDialogFocus(this.box);
+
+    this.el.addEventListener('click', (ev) => {
+      if (ev.target === this.el) { this.close(); return; } // backdrop
+      if (ev.target.closest?.('.term-dot-close')) { this.close(); return; }
+    });
+
+    document.addEventListener('keydown', (ev) => {
+      if (!this._open) return;
+      if (ev.key === 'Escape') { ev.preventDefault(); this.close(); }
+    });
+  },
+
+  /**
+   * Open the profile popup for a contributor login.
+   * @param {string} login - GitHub login from STATE.data.contributors.
+   */
+  open(login) {
+    if (!this.el || !STATE.data) return;
+    const list = STATE.data.contributors || [];
+    const c = list.find((x) => x.login === login);
+    if (!c) return;
+    this._lastFocus = document.activeElement;
+    const req = ++this._req;
+
+    /* Leaderboard rank + share of every tracked default-branch commit. */
+    const ranked = [...list].sort((a, b) => (b.contributions || 0) - (a.contributions || 0));
+    const rank = ranked.findIndex((x) => x.login === login) + 1;
+    const total = Math.max(1, list.reduce((a, x) => a + (x.contributions || 0), 0));
+    const share = Math.max(1, Math.round(((c.contributions || 0) / total) * 100));
+
+    /* Issues/PRs authored inside the tracked tracker windows. */
+    const authored = (bucket) => [...(bucket?.open || []), ...(bucket?.closed || [])]
+      .filter((r) => r.user === login).length;
+    const tracked = authored(STATE.data.issues) + authored(STATE.data.pulls);
+
+    const initials = Utils.esc(login.slice(0, 2).toUpperCase());
+    const arrow = UI.ICONS.external;
+    const stats = [
+      ['commits', Utils.fmtInt(c.contributions || 0)],
+      ['share', `${share}%`],
+      ['rank', `#${rank || '—'}`],
+      ['tracked items', Utils.fmtInt(tracked)],
+    ];
+
+    this.box.innerHTML = `
+      <div class="term-bar pkg-modal-bar">
+        <button class="term-dot term-dot-close" type="button" aria-label="Close contributor profile">
+          ${UI.ICONS.close}
+        </button><span class="term-dot"></span><span class="term-dot"></span>
+        <span class="term-title">operator://${Utils.esc(login)}</span>
+      </div>
+      <div class="pkg-modal-body">
+        <div class="contrib-hero">
+          <img class="contrib-avatar contrib-hero-avatar" src="${Utils.esc(c.avatar_url || '')}" alt="${Utils.esc(login)} avatar" loading="lazy"
+               onerror="this.outerHTML='<div class=\\'contrib-avatar contrib-hero-avatar contrib-avatar-fallback\\'>${initials}</div>'" />
+          <div class="contrib-hero-id">
+            <h3 class="pkg-modal-name" id="contrib-modal-title">@${Utils.esc(login)}</h3>
+            <div class="contrib-role">${rank === 1 ? 'lead maintainer' : 'maintainer'}</div>
+          </div>
+          <span class="tag contrib-rank">rank&nbsp;#${rank || '—'}</span>
+        </div>
+        <p class="contrib-bio" data-fill="bio" hidden></p>
+        <div class="contrib-stats">
+          ${stats.map(([label, val]) => `
+            <div class="contrib-stat">
+              <span class="s-label">${label}</span>
+              <span class="s-value">${val}</span>
+            </div>`).join('')}
+        </div>
+        <h4 class="pkg-modal-h">Commit Share <span class="h-sub">// default branch</span></h4>
+        <div class="contrib-bar contrib-share-bar" role="img" aria-label="${share}% of tracked default-branch commits"><i style="width:${share}%"></i></div>
+        <h4 class="pkg-modal-h">Recent Commits <span class="h-sub">// by @${Utils.esc(login)}</span></h4>
+        <div class="contrib-commits" data-fill="commits"><p class="contrib-loading">// syncing commit history…</p></div>
+        <div data-fill="profile"></div>
+        <div class="item-actions">
+          <a class="btn" href="${Utils.esc(c.html_url)}" target="_blank" rel="noopener">
+            View on GitHub
+            ${arrow}
+          </a>
+          <a class="btn" href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/commits?author=${encodeURIComponent(login)}" target="_blank" rel="noopener">
+            Commits by @${Utils.esc(login)}
+            ${arrow}
+          </a>
+        </div>
+      </div>`;
+
+    /* Show (transition in on the next frame), lock page scroll, focus. */
+    this.el.hidden = false;
+    requestAnimationFrame(() => this.el.classList.add('on'));
+    document.body.classList.add('pkg-modal-open');
+    this._open = true;
+    this.box.querySelector('.term-dot-close')?.focus();
+
+    this._fill(login, req);
+  },
+
+  /**
+   * Lazily hydrate the GitHub-only fields (profile + recent commits). Both
+   * endpoints run through the shared sessionStorage cache; failures degrade
+   * quietly — the local stats are the floor, never an empty popup.
+   * @param {string} login
+   * @param {number} req - Request token captured by open().
+   */
+  async _fill(login, req) {
+    const [profile, commits] = await Promise.allSettled([
+      API.fetchJSON(`/users/${encodeURIComponent(login)}`),
+      API.fetchJSON(`/commits?author=${encodeURIComponent(login)}&per_page=6`),
+    ]);
+    if (req !== this._req || !this._open) return; // superseded or dismissed
+
+    /* Recent commits — the ticker's mono language, in list form. */
+    const cbox = this.box.querySelector('[data-fill="commits"]');
+    const rows = commits.status === 'fulfilled' && Array.isArray(commits.value) ? commits.value : [];
+    if (cbox) {
+      cbox.innerHTML = rows.length
+        ? rows.map((raw) => API.normalizeCommit(raw)).filter((cm) => cm.sha).map((cm) => `
+            <a class="contrib-commit" href="${Utils.esc(cm.url)}" target="_blank" rel="noopener">
+              <span class="sha">${Utils.esc(cm.sha)}</span>
+              <span class="cmsg">${Utils.esc(cm.msg)}</span>
+              <span class="ago">${Utils.timeAgo(cm.date)}</span>
+            </a>`).join('')
+        : '<p class="contrib-loading">// commit history unavailable</p>';
+    }
+
+    /* Profile — only fields GitHub actually returned earn a row. */
+    const p = profile.status === 'fulfilled' ? profile.value : null;
+    const pbox = this.box.querySelector('[data-fill="profile"]');
+    if (!pbox || !p || p.message) return;
+    const fields = [];
+    if (p.name) fields.push(['NAME', Utils.esc(p.name)]);
+    if (p.company) fields.push(['COMPANY', Utils.esc(p.company)]);
+    if (p.location) fields.push(['LOCATION', Utils.esc(p.location)]);
+    if (p.blog) {
+      const href = /^https?:\/\//i.test(p.blog) ? p.blog : `https://${p.blog}`;
+      fields.push(['WEBSITE', `<a href="${Utils.esc(href)}" target="_blank" rel="noopener">${Utils.esc(p.blog)}</a>`]);
+    }
+    if (p.created_at) fields.push(['MEMBER SINCE', Utils.fmtDate(new Date(p.created_at))]);
+    if (typeof p.followers === 'number') fields.push(['FOLLOWERS', Utils.fmtInt(p.followers)]);
+    if (typeof p.public_repos === 'number') fields.push(['PUBLIC REPOS', Utils.fmtInt(p.public_repos)]);
+
+    const bio = this.box.querySelector('[data-fill="bio"]');
+    if (bio && p.bio) { bio.textContent = p.bio; bio.hidden = false; }
+    if (!fields.length) return;
+    pbox.innerHTML = `
+      <h4 class="pkg-modal-h">Profile <span class="h-sub">// github</span></h4>
+      <div class="item-fields contrib-profile">
+        ${fields.map(([label, val]) => `
+          <div class="item-field">
+            <span class="f-label">${label}</span>
+            <span class="f-value">${val}</span>
+          </div>`).join('')}
+      </div>`;
+  },
+
+  /** Dismiss the modal and restore focus to the originating card. */
+  close() {
+    if (!this._open) return;
+    this._open = false;
+    this.el.classList.remove('on');
+    document.body.classList.remove('pkg-modal-open');
+    const done = () => { this.el.hidden = true; };
+    if (Utils.reducedMotion) done(); else setTimeout(done, 300);
+    this._lastFocus?.focus?.();
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * ReleaseModal — release-local changelog, using the contributor dialog chrome.
+ * ------------------------------------------------------------------------- */
+const ReleaseModal = {
+  el: null, box: null, _open: false, _lastFocus: null,
+
+  init() {
+    this.el = Utils.$('#release-changelog-modal');
+    if (!this.el) return;
+    this.box = this.el.querySelector('.pkg-modal');
+    trapDialogFocus(this.box);
+    this.el.addEventListener('click', (event) => {
+      if (event.target === this.el || event.target.closest?.('.term-dot-close')) this.close();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (this._open && event.key === 'Escape') { event.preventDefault(); this.close(); }
+    });
+  },
+
+  open(release, changelog) {
+    if (!this.el || !changelog) return;
+    this._lastFocus = document.activeElement;
+    this.box.innerHTML = `
+      <div class="term-bar pkg-modal-bar">
+        <button class="term-dot term-dot-close" type="button" aria-label="Close release changelog">${UI.ICONS.close}</button>
+        <span class="term-dot"></span><span class="term-dot"></span>
+        <span class="term-title">changelog://${Utils.esc(release.tag)}</span>
+      </div>
+      <div class="pkg-modal-body">
+        <h3 class="pkg-modal-name" id="release-changelog-title">Changelog — ${Utils.esc(release.tag)}</h3>
+        <div class="md-body release-changelog-content">${Markdown.render(changelog)}</div>
+        <div class="item-actions"><a class="btn" href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/releases/tag/${encodeURIComponent(release.tag)}" target="_blank" rel="noopener">View release on GitHub ${UI.ICONS.external}</a></div>
+      </div>`;
+    UI.prepareReleaseCode(this.box);
+    this.el.hidden = false;
+    this._open = true;
+    document.body.classList.add('pkg-modal-open');
+    requestAnimationFrame(() => { if (this._open) this.el.classList.add('on'); });
+    this.box.querySelector('.term-dot-close').focus();
+  },
+
+  close() {
+    if (!this._open) return;
+    this._open = false;
+    this.el.classList.remove('on');
+    document.body.classList.remove('pkg-modal-open');
+    const hide = () => { if (!this._open) this.el.hidden = true; };
+    if (Utils.reducedMotion) hide(); else setTimeout(hide, 300);
+    this._lastFocus?.focus?.();
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * Reveal — IntersectionObserver scroll reveals + KPI count-up animation.
+ * ------------------------------------------------------------------------- */
+const Reveal = {
+  /** Observe all .reveal elements; adds .in with a light stagger. */
+  init() {
+    const els = document.querySelectorAll('.reveal');
+    if (Utils.reducedMotion || !('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    els.forEach((el, i) => {
+      el.style.transitionDelay = `${(i % 4) * 55}ms`;
+      io.observe(el);
+    });
+  },
+
+  /**
+   * Animate a single KPI value from 0 to its target.
+   * @param {Element} el - .kpi-value element with data-target / data-format.
+   */
+  _countUp(el) {
+    const target = parseFloat(el.dataset.target || '0');
+    const fmt = el.dataset.format || 'int';
+    const render = (v) => {
+      el.textContent = fmt === 'bytes' ? Utils.fmtBytes(v) : Utils.fmtInt(v);
+    };
+    if (Utils.reducedMotion || target <= 0) { render(target); return; }
+
+    const dur = 1350, t0 = performance.now();
+    /** @param {number} t rAF timestamp */
+    const frame = (t) => {
+      const p = Utils.clamp((t - t0) / dur, 0, 1);
+      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      render(target * eased);
+      if (p < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  },
+
+  /** Observe KPI values and trigger the count-up on first visibility. */
+  watchCounters() {
+    const els = document.querySelectorAll('.kpi-value[data-target]');
+    if (Utils.reducedMotion || !('IntersectionObserver' in window)) {
+      els.forEach((el) => this._countUp(el));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        this._countUp(en.target);
+        io.unobserve(en.target);
+      });
+    }, { threshold: 0.4 });
+    els.forEach((el) => io.observe(el));
+  },
+};
+
+/* ----------------------------------------------------------------------------
+ * STATE + boot orchestration.
+ * ------------------------------------------------------------------------- */
+const STATE = { data: null };
+
+/**
+ * Application entry point. Boots static chrome immediately (motion controls,
+ * reveals), then hydrates the dashboard from the GitHub API and renders all
+ * data-driven sections + charts.
+ */
+async function boot() {
+  Tip.init();
+  Reveal.init();
+  UI.renderHud();
+  UI.bindCloneCopy();
+  const motionToggle = Utils.$('#motion-toggle');
+  motionToggle?.addEventListener('click', () => {
+    const paused = document.body.classList.toggle('motion-paused');
+    motionToggle.setAttribute('aria-pressed', String(paused));
+    motionToggle.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} background animation`);
+    motionToggle.innerHTML = paused ? UI.ICONS.play : UI.ICONS.pause;
+    document.dispatchEvent(new Event('conflux:motionchange'));
+  });
+  document.addEventListener('visibilitychange', () => {
+    document.body.classList.toggle('page-hidden', document.hidden);
+    document.dispatchEvent(new Event('conflux:motionchange'));
+  });
+  ItemModal.init();
+  ContribModal.init();
+  ReleaseModal.init();
+
+  /* Dock the HEAD FEED ticker as a sticky footer the instant the user
+   * scrolls at all; undock when the page returns to the very top. A spacer
+   * preserves its original flow position. While fixed, portal the ticker to
+   * <body>: leaving it inside main traps z-index:40 in main's z-index:1
+   * stacking context, where the later footer can paint over it and create a
+   * disappearance zone near the bottom of the page. */
+  const ticker = Utils.$('.ticker');
+  let tickerSpacer = null;
+  const dockTicker = (docked) => {
+    if (!ticker || docked === Boolean(tickerSpacer)) return; // already in target state
+    if (docked) {
+      const h = ticker.offsetHeight;
+      document.documentElement.style.setProperty('--ticker-h', `${h}px`);
+      tickerSpacer = document.createElement('div');
+      tickerSpacer.className = 'ticker-spacer';
+      tickerSpacer.style.height = `${h}px`;
+      tickerSpacer.setAttribute('aria-hidden', 'true');
+      ticker.parentNode.insertBefore(tickerSpacer, ticker);
+      document.body.appendChild(ticker); // escape main's stacking context
+      ticker.classList.add('docked');
+      document.body.classList.add('ticker-docked');
+    } else {
+      ticker.classList.remove('docked');
+      tickerSpacer.replaceWith(ticker); // restore the exact in-flow position
+      tickerSpacer = null;
+      document.body.classList.remove('ticker-docked');
+    }
+  };
+
+  /* Solidify the nav + dock the ticker on scroll. Run once immediately too,
+   * so browser-restored scroll positions start in the correct state. */
+  const nav = Utils.$('.nav');
+  const syncScrollChrome = () => {
+    nav?.classList.toggle('scrolled', window.scrollY > 12);
+    const hero = Utils.$('#hero');
+    nav?.classList.toggle('over-hero', Boolean(hero && hero.getBoundingClientRect().bottom > nav.offsetHeight));
+    dockTicker(window.scrollY > 0);
+  };
+  window.addEventListener('scroll', syncScrollChrome, { passive: true });
+  syncScrollChrome();
+
+  /* Debounced rebuild keeps chart geometry honest across resizes. */
+  window.addEventListener('resize', Utils.debounce(() => {
+    syncScrollChrome();
+    if (STATE.data) Charts.buildAll(STATE.data);
+  }, 220));
+
+  try {
+    /* Individual GitHub feeds settle independently. */
+    STATE.data = await API.loadAll();
+  } catch (err) {
+    /* loadAll is designed to never throw; this is belt-and-suspenders. */
+    console.error('[conflux] telemetry load failed, full fallback engaged', err);
+    STATE.data = {
+      mode: 'sim',
+      activityAvailable: false,
+      repo: SNAPSHOT.repo,
+      weekly: [],
+      languages: SNAPSHOT.languages,
+      contributors: SNAPSHOT.contributors.filter((c) => !Utils.isAppLogin(c.login)),
+      branches: SNAPSHOT.branches.map((b) => ({ ...b, isDefault: b.name === SNAPSHOT.repo.default_branch })),
+      releases: [],
+      releasesSynthetic: true,
+      ticker: [],
+      issues: { open: [], closed: [] },
+      pulls: { open: [], closed: [] },
+      counts: SNAPSHOT.counts,
+      days: Activity.fromCommits([]).days,
+    };
+  }
+
+  UI.renderAll(STATE.data);
+  Charts.buildAll(STATE.data);
+  Reveal.watchCounters();
+  syncScrollChrome();
+  document.body.classList.add('loaded');
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+
+// vim: ft=javascript sts=4 sw=4 ts=4 et :

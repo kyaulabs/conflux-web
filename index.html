@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CONFLUX — a native Linux DJ application. Follow its source, releases, milestones and Kanban board." />
+  <meta name="theme-color" content="#111317" />
+  <meta name="color-scheme" content="dark" />
+  <meta property="og:title" content="CONFLUX // Music, directed." />
+  <meta property="og:description" content="A native Linux DJ application by KYAU Labs." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/kyaulabs/conflux/main/brand/assets/social/conflux-open-graph-dark.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="CONFLUX — Music, directed." />
+  <title>CONFLUX // Music, directed.</title>
+  <link rel="icon" type="image/svg+xml" href="brand/assets/favicons/favicon.svg" />
+  <link rel="apple-touch-icon" href="brand/assets/favicons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="brand/tokens/brand.css" />
+  <link rel="stylesheet" href="styles.min.css" />
+  <script src="vendor/d3.min.js" defer></script>
+  <script src="signal.min.js" defer></script>
+  <script src="app.min.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="signal-background" aria-hidden="true"></div>
+  <header class="nav over-hero" id="top">
+    <a class="nav-brand" href="#top" aria-label="CONFLUX home">
+      <img class="brand-mark" src="brand/assets/logos/conflux-wordmark-dark.svg" alt="" />
+      <span class="brand-sub">// kyaulabs</span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#vitals">Vitals</a><a href="#player">Player</a><a href="#activity">Activity</a><a href="#matrix">Matrix</a><a href="#branches">Branches</a><a href="#milestones">Milestones</a><a href="#releases">Releases</a><a href="#tracker">Tracker</a><a href="#contributors">Contributors</a>
+    </nav>
+    <div class="nav-actions">
+      <span id="feed-badge" class="badge badge-live" title="Data feed status"><span class="badge-dot" aria-hidden="true"></span><span id="feed-badge-text">SYNC</span></span>
+      <button id="motion-toggle" class="icon-btn" type="button" aria-label="Pause background animation" aria-pressed="false"><svg class="fa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="brand/assets/ui-icons/sprite.svg#pause" width="24" height="24"></use></svg></button>
+      <a class="btn nav-gh" href="https://github.com/kyaulabs/conflux" target="_blank" rel="noopener"><svg class="fa-icon ico-gh" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="vendor/fontawesome-icons.svg#github" width="24" height="24"></use></svg><span>GitHub</span></a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero" id="hero">
+      <div class="hud hud-tl" aria-hidden="true">KYAU LABS // R&amp;D DIVISION</div>
+      <div class="hud hud-tr" aria-hidden="true">NODE: github.com/kyaulabs/conflux</div>
+      <div class="hud hud-bl" aria-hidden="true">PROTO: HTTPS / REST / JSON</div>
+      <div class="hud hud-br" aria-hidden="true">SESSION: <span id="hud-session">--------</span></div>
+      <div class="hero-inner">
+        <p class="hero-kicker reveal">[ C++20 // PIPEWIRE AUDIO // GIT TELEMETRY ]</p>
+        <h1 class="hero-title reveal" aria-label="CONFLUX"><img class="hero-lockup" src="brand/assets/logos/conflux-stacked-dark.svg" alt="" /></h1>
+        <div class="hero-sub">
+          <p class="hero-tag reveal"><em>Music, directed.</em> Two decks, independent headphone cue and stereo recording. Follow the native Linux DJ application from its audio engine to its next release.</p>
+          <div class="hero-chips reveal" id="hero-chips" aria-label="Repository counters"><span class="chip skeleton-chip">— syncing —</span></div>
+          <div class="hero-cta reveal">
+            <a class="btn btn-primary" href="https://github.com/kyaulabs/conflux" target="_blank" rel="noopener">View Repository <svg class="fa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="brand/assets/ui-icons/sprite.svg#external-link" width="24" height="24"></use></svg></a>
+            <a class="btn" href="#install">Get the Source <svg class="fa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="brand/assets/ui-icons/sprite.svg#download" width="24" height="24"></use></svg></a>
+          </div>
+        </div>
+      </div>
+      <a class="hero-scroll" href="#vitals" aria-label="Scroll to dashboard"><span class="hero-scroll-arrow" aria-hidden="true"><svg class="fa-icon" viewBox="0 0 24 24" focusable="false"><use href="brand/assets/ui-icons/sprite.svg#chevron-down" width="24" height="24"></use></svg></span><span class="hero-scroll-text">SCROLL</span></a>
+    </section>
+    <div class="ticker" aria-label="Latest commits"><div class="ticker-label">FEED</div><div class="ticker-viewport"><div class="ticker-track" id="ticker-track"><span class="ticker-item">— awaiting commit feed —</span></div></div></div>
+    <section class="section" id="vitals">
+      <header class="sec-head reveal"><span class="kicker">[ 01 // VITALS ]</span><h2>Repository Vitals</h2><p class="sec-sub">Public repository counters from the GitHub REST API. The feed badge distinguishes live metadata from the dated snapshot.</p></header>
+      <p class="empty-note" id="data-note" role="status"></p>
+      <div class="grid-kpi" id="kpi-grid"><article class="panel kpi skeleton-panel"></article></div>
+    </section>
+    <section class="section" id="player">
+      <header class="sec-head reveal"><span class="kicker">[ 02 // DJ APPLICATION ]</span><h2>Player <span class="h2-sub">— built for Linux</span></h2><p class="sec-sub">Get the player source and explore the performance controls.</p></header>
+      <div class="panel core-install reveal" id="install">
+        <div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-title">conflux — source checkout</span><span class="term-count">C++20</span></div>
+        <div class="core-install-body">
+          <div class="pkg-head"><div><h3 class="pkg-name">Get the player</h3><div class="pkg-role">source installation</div></div><span class="tag">AGPL-3.0</span></div>
+          <p class="core-install-note">Clone the application source. The repository documents Linux audio prerequisites, the Qt Quick interface and how to build with CMake.</p>
+          <div class="pkg-installs"><div class="clone-line clone-block"><div class="clone-block-cmds"><span class="clone-row"><span class="clone-prompt" aria-hidden="true">$</span><code class="clone-cmd">git clone https://github.com/kyaulabs/conflux.git</code></span></div><button class="clone-copy icon-btn" type="button" aria-label="Copy source clone command"><svg class="fa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="vendor/fontawesome-icons.svg#copy" width="24" height="24"></use></svg></button></div></div>
+          <a class="pkg-cta" href="https://github.com/kyaulabs/conflux" target="_blank" rel="noopener">repository + build documentation <svg class="fa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="brand/assets/ui-icons/sprite.svg#external-link" width="24" height="24"></use></svg></a>
+          <p class="empty-note" id="copy-status" role="status"></p>
+        </div>
+      </div>
+      <article class="panel player-note reveal"><span class="kicker">// PERFORMANCE VIEW</span><h3>Two decks, one master</h3><p>Prepare local tracks, cue independently and record the post-master mix. The <a href="#milestones">roadmap</a> tracks preparation, stems and the planned AI Director.</p></article>
+    </section>
+    <section class="section" id="activity">
+      <header class="sec-head reveal"><span class="kicker">[ 03 // TELEMETRY ]</span><h2>Commit Activity <span class="h2-sub">— 52 week waveform</span></h2><p class="sec-sub">Weekly commit volume on the default branch. Hover the waveform to sample any week. Pending statistics are marked unavailable.</p></header>
+      <div class="panel panel-chart reveal"><div class="chart-meta"><div><span class="meta-label">TOTAL / 52W</span><span class="meta-value" id="activity-total">—</span></div><div><span class="meta-label">AVG / WEEK</span><span class="meta-value" id="activity-avg">—</span></div><div><span class="meta-label">PEAK</span><span class="meta-value" id="activity-peak">—</span></div></div><div class="chart-mount chart-mount-lg" id="chart-activity" role="img" aria-label="Area chart of weekly commit volume over the last 52 weeks"></div></div>
+    </section>
+    <section class="section" id="pulse">
+      <header class="sec-head reveal"><span class="kicker">[ 04 // COMPOSITION ]</span><h2>System Pulse</h2><p class="sec-sub">Source language composition and resolution gauges for the issue and pull-request pipelines.</p></header>
+      <div class="grid-pulse">
+        <div class="panel panel-chart reveal"><h3 class="panel-title">Language Composition <span class="panel-title-sub">// bytes</span></h3><div class="chart-mount chart-mount-md" id="chart-langs" role="img" aria-label="Donut chart of language composition"></div><ul class="legend" id="langs-legend"></ul></div>
+        <div class="panel panel-chart reveal"><h3 class="panel-title">Issue Resolution <span class="panel-title-sub">// closed : total</span></h3><div class="chart-mount chart-mount-md" id="gauge-issues" role="img" aria-label="Gauge showing issue resolution rate"></div><p class="gauge-cap" id="gauge-issues-cap">—</p></div>
+        <div class="panel panel-chart reveal"><h3 class="panel-title">PR Throughput <span class="panel-title-sub">// closed : total</span></h3><div class="chart-mount chart-mount-md" id="gauge-prs" role="img" aria-label="Gauge showing pull request throughput"></div><p class="gauge-cap" id="gauge-prs-cap">—</p></div>
+      </div>
+    </section>
+    <section class="section" id="matrix"><header class="sec-head reveal"><span class="kicker">[ 05 // MATRIX ]</span><h2>Commit Matrix <span class="h2-sub">— 52 week lattice</span></h2><p class="sec-sub">Daily commits on the default branch, by UTC committer date. Each cell represents one day.</p></header><div class="panel panel-chart reveal"><div class="chart-mount chart-mount-heat" id="chart-heatmap" role="img" aria-label="Daily default-branch commits by UTC committer date"></div></div></section>
+    <section class="section" id="branches"><header class="sec-head reveal"><span class="kicker">[ 06 // TOPOLOGY ]</span><h2>Branches</h2><p class="sec-sub">Repository topology — HEAD commits, authors, protection and checks.</p></header><div class="branch-list" id="branches-list"><article class="panel skeleton-panel branch-card"></article></div></section>
+    <section class="section" id="milestones">
+      <header class="sec-head reveal"><span class="kicker">[ 07 // ROADMAP ]</span><h2>Milestones</h2><p class="sec-sub">Application milestones and project objectives. Progress follows public GitHub issue and board states.</p></header>
+      <div class="panel roadmap-panel reveal"><div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-title">conflux — roadmap</span></div><div id="roadmap-content" class="roadmap-content"><p class="empty-note">View <a href="https://github.com/kyaulabs/conflux/milestones" target="_blank" rel="noopener">GitHub milestones</a> or the <a href="https://github.com/orgs/kyaulabs/projects/5" target="_blank" rel="noopener">public project board</a>. Live progress requires JavaScript.</p></div></div>
+    </section>
+    <section class="section" id="releases"><header class="sec-head reveal"><span class="kicker">[ 08 // DEPLOY LOG ]</span><h2>Release Timeline</h2><p class="sec-sub">Versioned releases in chronological order. Expand a release to read its full notes. <span id="releases-note"></span></p></header><div class="timeline" id="releases-list"><article class="panel skeleton-panel release-card"></article></div></section>
+    <section class="section" id="tracker">
+      <header class="sec-head reveal"><span class="kicker">[ 09 // TRACKER ]</span><h2>Issues &amp; Pull Requests</h2><p class="sec-sub">Open and recently closed work items. Activate any row for the full record.</p></header>
+      <div class="grid-tracker">
+        <div class="panel term reveal"><div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-title">conflux — issues</span><span class="term-count" id="issues-count-badge">—</span></div><div class="pkg-tabs tracker-tabs" id="issues-tabs" role="tablist" aria-label="Filter issues by state"><button class="pkg-tab tracker-tab active" type="button" role="tab" aria-selected="true" data-state="open">Open<span class="tracker-tab-n">—</span></button><button class="pkg-tab tracker-tab" type="button" role="tab" aria-selected="false" data-state="closed">Closed<span class="tracker-tab-n">—</span></button></div><ul class="term-list" id="issues-list"></ul></div>
+        <div class="panel term reveal"><div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-title">conflux — pull requests</span><span class="term-count" id="prs-count-badge">—</span></div><div class="pkg-tabs tracker-tabs" id="prs-tabs" role="tablist" aria-label="Filter pull requests by state"><button class="pkg-tab tracker-tab active" type="button" role="tab" aria-selected="true" data-state="open">Open<span class="tracker-tab-n">—</span></button><button class="pkg-tab tracker-tab" type="button" role="tab" aria-selected="false" data-state="closed">Closed<span class="tracker-tab-n">—</span></button></div><ul class="term-list" id="prs-list"></ul></div>
+      </div>
+    </section>
+    <section class="section" id="contributors"><header class="sec-head reveal"><span class="kicker">[ 10 // OPERATORS ]</span><h2>Contributors</h2><p class="sec-sub">Repository contributors ranked by commits on the default branch.</p></header><div class="grid-contrib" id="contributors-list"><article class="panel skeleton-panel contrib-card"></article></div></section>
+  </main>
+  <footer class="footer"><div class="footer-grid"><div><img class="brand-mark footer-mark" src="brand/assets/logos/conflux-horizontal-dark.svg" alt="CONFLUX logo" /><p class="footer-line">CONFLUX — a native Linux DJ application.<br />Engineered by <a href="https://kyaulabs.com" target="_blank" rel="noopener">KYAU Labs</a>. Licensed AGPL-3.0.</p></div><div class="footer-meta"><p>TELEMETRY SOURCE: <a href="https://github.com/kyaulabs/conflux" target="_blank" rel="noopener">api.github.com/repos/kyaulabs/conflux</a></p><p>LAST SYNC: <span id="footer-sync">—</span></p><p>DATA VISUALIZATION: <a href="https://d3js.org" target="_blank" rel="noopener">D3.js v7</a></p><p>BACKGROUND: D3 stereo waveform</p></div></div><p class="footer-legal">No cookies or tracking. GitHub supplies public repository metadata; your browser stores a short-lived data cache.</p></footer>
+  <div class="pkg-modal-overlay" id="item-modal" hidden><div class="pkg-modal item-modal panel" role="dialog" aria-modal="true" aria-labelledby="item-modal-title" tabindex="-1"></div></div>
+  <div class="pkg-modal-overlay" id="contrib-modal" hidden><div class="pkg-modal contrib-modal panel" role="dialog" aria-modal="true" aria-labelledby="contrib-modal-title" tabindex="-1"></div></div>
+  <div class="pkg-modal-overlay" id="release-changelog-modal" hidden><div class="pkg-modal release-changelog-modal panel" role="dialog" aria-modal="true" aria-labelledby="release-changelog-title" tabindex="-1"></div></div>
+  <div id="chart-tip" class="chart-tip" role="status" aria-live="polite"></div>
+  <noscript><div class="noscript-warn">CONFLUX telemetry requires JavaScript. The player source and project links remain available above.</div></noscript>
+</body>
+</html>
