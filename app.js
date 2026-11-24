@@ -2322,7 +2322,7 @@ const Roadmap = {
     pane.innerHTML = `<article class="panel milestone-card" data-milestone="${milestone.number}">
       <div class="milestone-heading">${milestone.state === 'closed' ? UI.ICONS.closed : UI.ICONS.issue}
         <h3><a href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/milestone/${milestone.number}" target="_blank" rel="noopener">${this.wrapTitle(milestone.title)}</a></h3>
-        <span class="tag">${milestone.state === 'closed' ? 'Closed' : 'Open'}</span>
+        ${milestone.state === 'closed' ? '<span class="tag">Closed</span>' : '<span class="tag tag-milestone-open">Open</span>'}
       </div>
       <div class="milestone-progress-label"><span>${total ? `${milestone.closed} of ${total} items closed` : 'No tracked items'}</span>${total ? `<span>${Math.round(milestone.closed / total * 100)}%</span>` : ''}</div>
       <progress value="${milestone.closed}" max="${Math.max(1, total)}" aria-label="${Utils.esc(milestone.title)}: ${milestone.closed} of ${total} items closed"></progress>
