@@ -1,4 +1,4 @@
-// $KYAULabs: styles.scss kyau@aura.kyaulabs 2026/11/22 -0800 Exp $
+// $KYAULabs: styles.scss kyau@aura.kyaulabs 2026/11/23 -0800 Exp $
 :root {
   /* LCD glass and recessed chassis from the application's DeckSurface.qml;
      raised edge from SurfaceKnob.qml. Keep deck colors for signals. */
@@ -16,6 +16,7 @@
   --ink-1: var(--muted);
   --ink-2: var(--muted);
   --accent: var(--deck-a);
+  --tag-accent: var(--conflux-dark-accent);
   --accent-2: var(--deck-a);
   --bar-stops: var(--conflux-signal), var(--deck-a);
   --progress-stops: var(--deck-a), var(--deck-b);
@@ -1089,14 +1090,6 @@ body.pkg-modal-open { overflow: hidden; }
 }
 .contrib-hero-id { min-width: 0; flex: 1 1 auto; }
 
-/* Leaderboard rank chip — violet, the "elevated" accent (same hue language
-   as merged PRs). */
-.contrib-rank {
-  color: var(--accent-2);
-  border-color: color-mix(in srgb, var(--accent-2) 55%, transparent);
-  background: color-mix(in srgb, var(--accent-2) 10%, transparent);
-}
-
 .contrib-bio { margin: 14px 0 0; font-size: 0.86rem; color: var(--ink-1); }
 
 /* Repo-local stat chips — 2-up on phones, 4-up from 620px. */
@@ -1207,11 +1200,11 @@ body.pkg-modal-open { overflow: hidden; }
   text-transform: uppercase;
   padding: 4px 9px;
   border-radius: 6px;
-  border: 1px solid var(--line-strong);
-  color: var(--ink-2);
+  border: 1px solid color-mix(in srgb, var(--tag-accent) 55%, transparent);
+  color: var(--tag-accent);
 }
-.tag-default { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
-.tag-protected { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.tag-default, .contrib-rank { background: color-mix(in srgb, var(--tag-accent) 10%, transparent); }
+.tag-default { border-color: var(--tag-accent); }
 
 .branch-sha {
   display: inline-block;
@@ -1478,8 +1471,8 @@ body.pkg-modal-open { overflow: hidden; }
 
 .release-title { font-size: 1rem; font-weight: 600; transform: translateY(0.1em); }
 .release-badges { display: inline-flex; align-items: center; gap: 0.75rem; }
-.release-changelog { min-block-size: 1.5rem; display: inline-flex; align-items: center; color: var(--ink-1); cursor: pointer; }
-.release-changelog:hover { color: var(--accent); border-color: var(--accent); }
+.release-changelog { min-block-size: 1.5rem; display: inline-flex; align-items: center; cursor: pointer; }
+.release-changelog:hover { border-color: var(--tag-accent); }
 .release-changelog-content { margin-block: 1rem; }
 
 .badge-latest {
@@ -1487,8 +1480,8 @@ body.pkg-modal-open { overflow: hidden; }
   font-size: 0.56rem;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: var(--ok);
-  border: 1px solid color-mix(in srgb, var(--ok) 55%, transparent);
+  color: var(--tag-accent);
+  border: 1px solid color-mix(in srgb, var(--tag-accent) 55%, transparent);
   padding: 4px 9px;
   border-radius: 6px;
 }
